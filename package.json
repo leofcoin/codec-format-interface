@@ -1,0 +1,33 @@
+{
+  "name": "@leofcoin/codec-format-interface",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "c": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leofcoin/codec-format-interface.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leofcoin/codec-format-interface/issues"
+  },
+  "homepage": "https://github.com/leofcoin/codec-format-interface#readme",
+  "dependencies": {
+    "@vandeurenglenn/base32": "^1.1.0",
+    "@vandeurenglenn/base58": "^1.1.0",
+    "@vandeurenglenn/is-hex": "^1.0.0",
+    "keccak": "^3.0.2",
+    "varint": "^6.0.0"
+  },
+  "devDependencies": {
+    "rollup": "^2.74.1",
+    "tape": "^5.5.3"
+  }
+}
