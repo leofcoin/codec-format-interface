@@ -24,6 +24,7 @@
     "@vandeurenglenn/base58": "^1.1.0",
     "@vandeurenglenn/is-hex": "^1.0.0",
     "keccak": "^3.0.2",
+    "protons": "^2.0.1",
     "varint": "^6.0.0"
   },
   "devDependencies": {

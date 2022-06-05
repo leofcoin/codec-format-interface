@@ -5,12 +5,12 @@ import isHex from '@vandeurenglenn/is-hex';
 export default class BasicInterface {
   #handleDecode() {
     if (!this.decode) throw new Error('bad implementation: needs decode func')
-    this.decode()
+    return this.decode()
   }
 
   #handleEncode() {
     if (!this.encode) throw new Error('bad implementation: needs encode func')
-    this.encode()
+    return this.encode()
   }
   isHex(string) {
     return isHex(string)
@@ -71,8 +71,8 @@ export default class BasicInterface {
     return this.#handleDecode()
   }
 
-  toString(encoding = 'utf8') {
-    if (!this.encoded) this.#handleEncode()
+  async toString(encoding = 'utf8') {
+    if (!this.encoded) await this.#handleEncode()
     return this.encoded.toString(encoding)
   }
 
@@ -86,16 +86,16 @@ export default class BasicInterface {
   /**
    * @return {String} encoded
    */
-  toBs32() {
-    if (!this.encoded) this.#handleEncode()
+  async toBs32() {
+    if (!this.encoded) await this.#handleEncode()
     return bs32.encode(this.encoded)
   }
 
   /**
    * @return {String} encoded
    */
-  toBs58() {
-    if (!this.encoded) this.#handleEncode()
+  async toBs58() {
+    if (!this.encoded) await this.#handleEncode()
     return bs58.encode(this.encoded)
   }
 
@@ -117,7 +117,7 @@ export default class BasicInterface {
       }
 
       this.decoded = decoded
-      this.encode()
+      return this.encode()
     }
   }
 }
