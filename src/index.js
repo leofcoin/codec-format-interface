@@ -1,7 +1,5 @@
-import BasicInterface from './basic-interface.js'
-import FormatInterface from './codec-format-interface.js'
-import CodecHash from './codec-hash.js'
-import Codec from './codec.js'
-import codecs from './codecs.js'
-
-export default { codecs, Codec, CodecHash, FormatInterface, BasicInterface }
+export * as BasicInterface from './basic-interface.js'
+export * as FormatInterface from './codec-format-interface.js'
+export * as CodecHash from './codec-hash.js'
+export * as Codec from './codec.js'
+export * as codecs from './codecs.js'
