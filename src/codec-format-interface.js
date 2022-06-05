@@ -5,7 +5,7 @@ let protons
 
 export default class FormatInterface extends BasicInterface {
   async #importProtons() {
-    let importee = await import('protons')
+    let importee = await import(/* webpackChunkName: "protons" */ 'protons')
     return importee.default
   }
 
