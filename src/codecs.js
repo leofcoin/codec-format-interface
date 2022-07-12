@@ -76,4 +76,12 @@ export default {
     codec: parseInt('636d', 16),
     hashAlg: 'dbl-keccak-256',
   },
+  'peernet-folder' : {
+    codec: parseInt('7066', 16),
+    hashAlg: 'keccak-256',
+  },
+  'peernet-folder-response' : {
+    codec: parseInt('706672', 16),
+    hashAlg: 'keccak-256',
+  }
 }
