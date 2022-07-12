@@ -19,7 +19,7 @@ export default class BasicInterface {
     return bs32.isBase32(string)
   }
   isBase58(string) {
-    return bs58.isBase32(string)
+    return bs58.isBase58(string)
   }
   /**
    * @param {String} encoded
