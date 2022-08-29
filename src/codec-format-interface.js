@@ -1,25 +1,19 @@
 import BasicInterface from './basic-interface.js'
 import Codec from './codec.js';
 import Hash from './codec-hash.js'
-let protons
+import protons from 'protons'
 
 export default class FormatInterface extends BasicInterface {
-  async #importProtons() {
-    let importee = await import(/* webpackChunkName: "protons" */ 'protons')
-    return importee.default
-  }
 
   async protoEncode(data) {
-    if (!protons) protons = await this.#importProtons()
     return protons(this.proto)[this.messageName].encode(data)
   }
 
   async protoDecode(data) {
-    if (!protons) protons = await this.#importProtons()
     return protons(this.proto)[this.messageName].decode(data)
   }
 
-  async #init(buffer) {
+  async init(buffer) {
     if (buffer instanceof Uint8Array) await this.fromUint8Array(buffer)
     else if (buffer instanceof ArrayBuffer) await this.fromArrayBuffer(buffer)
     else if (buffer?.name === this.name) return buffer
@@ -44,7 +38,7 @@ export default class FormatInterface extends BasicInterface {
     this.proto = proto
     this.hashFormat = options.hashFormat || 'bs32'
     if (options.name) this.name = options.name
-    return this.#init(buffer)
+    return this.init(buffer)
   }
 
   /**

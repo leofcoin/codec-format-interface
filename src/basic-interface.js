@@ -3,12 +3,12 @@ import bs58 from '@vandeurenglenn/base58';
 import isHex from '@vandeurenglenn/is-hex';
 
 export default class BasicInterface {
-  #handleDecode() {
+  handleDecode() {
     if (!this.decode) throw new Error('bad implementation: needs decode func')
     return this.decode()
   }
 
-  #handleEncode() {
+  handleEncode() {
     if (!this.encode) throw new Error('bad implementation: needs encode func')
     return this.encode()
   }
@@ -26,7 +26,7 @@ export default class BasicInterface {
    */
   fromBs32(encoded) {
     this.encoded = bs32.decode(encoded)
-    return this.#handleDecode()
+    return this.handleDecode()
   }
 
   /**
@@ -34,7 +34,7 @@ export default class BasicInterface {
    */
   fromBs58(encoded) {
     this.encoded = bs58.decode(encoded)
-    return this.#handleDecode()
+    return this.handleDecode()
   }
 
   async toArray() {
@@ -47,12 +47,12 @@ export default class BasicInterface {
 
   fromString(string) {
     this.encoded = new Uint8Array(string.split(','))
-    return this.#handleDecode()
+    return this.handleDecode()
   }
 
   fromArray(array) {
     this.encoded = new Uint8Array([...array])
-    return this.#handleDecode()
+    return this.handleDecode()
   }
 
   /**
@@ -60,7 +60,7 @@ export default class BasicInterface {
    */
   fromEncoded(encoded) {
     this.encoded = encoded
-    return this.#handleDecode()
+    return this.handleDecode()
   }
 
   /**
@@ -68,11 +68,11 @@ export default class BasicInterface {
    */
   fromHex(encoded) {
     this.encoded = Buffer.from(encoded, 'hex')
-    return this.#handleDecode()
+    return this.handleDecode()
   }
 
   async toString(encoding = 'utf8') {
-    if (!this.encoded) await this.#handleEncode()
+    if (!this.encoded) await this.handleEncode()
     return this.encoded.toString(encoding)
   }
 
@@ -87,7 +87,7 @@ export default class BasicInterface {
    * @return {String} encoded
    */
   async toBs32() {
-    if (!this.encoded) await this.#handleEncode()
+    if (!this.encoded) await this.handleEncode()
     return bs32.encode(this.encoded)
   }
 
@@ -95,7 +95,7 @@ export default class BasicInterface {
    * @return {String} encoded
    */
   async toBs58() {
-    if (!this.encoded) await this.#handleEncode()
+    if (!this.encoded) await this.handleEncode()
     return bs58.encode(this.encoded)
   }
 
