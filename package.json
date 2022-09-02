@@ -3,7 +3,7 @@
   "version": "1.2.8",
   "description": "",
   "main": "dist/index.js",
-  "module": "src/index.js",
+  "module": "dist/module.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "c": "rollup -c"
@@ -24,7 +24,6 @@
     "@vandeurenglenn/base58": "^1.1.0",
     "@vandeurenglenn/is-hex": "^1.0.0",
     "keccak": "^3.0.2",
-    "protons": "^2.0.1",
     "varint": "^6.0.0"
   },
   "devDependencies": {

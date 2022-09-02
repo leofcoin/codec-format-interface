@@ -1,16 +1,17 @@
 import BasicInterface from './basic-interface.js'
 import Codec from './codec.js';
 import Hash from './codec-hash.js'
-import protons from 'protons'
 
 export default class FormatInterface extends BasicInterface {
 
   async protoEncode(data) {
-    return protons(this.proto)[this.messageName].encode(data)
+    // check schema
+    return new TextEncoder().encode(data)
   }
 
   async protoDecode(data) {
-    return protons(this.proto)[this.messageName].decode(data)
+    // check schema
+    return new TextDecoder().decode(data)
   }
 
   async init(buffer) {
@@ -66,6 +67,11 @@ export default class FormatInterface extends BasicInterface {
     encoded = encoded.slice(discoCodec.codecBuffer.length)
     this.name = discoCodec.name
     this.decoded = await this.protoDecode(encoded)
+    try {
+      this.decoded = JSON.parse(this.decoded)
+    } catch {
+      
+    }
     return this.decoded
   }
 
@@ -75,7 +81,7 @@ export default class FormatInterface extends BasicInterface {
   async encode(decoded) {
     if (!decoded) decoded = this.decoded;
     const codec = new Codec(this.name)
-    const encoded = await this.protoEncode(decoded)
+    const encoded = await this.protoEncode(typeof decoded === 'object' ? JSON.stringify(decoded) : decoded)
     const uint8Array = new Uint8Array(encoded.length + codec.codecBuffer.length)
     uint8Array.set(codec.codecBuffer)
     uint8Array.set(encoded, codec.codecBuffer.length)
