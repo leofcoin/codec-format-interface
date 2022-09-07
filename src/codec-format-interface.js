@@ -79,12 +79,17 @@ export default class FormatInterface extends BasicInterface {
    * @return {Buffer}
    */
   async encode(decoded) {
+    let encoded
     if (!decoded) decoded = this.decoded;
     const codec = new Codec(this.name)
-    const encoded = await this.protoEncode(typeof decoded === 'object' ? JSON.stringify(decoded) : decoded)
+
+    if (decoded instanceof Uint8Array) encoded = decoded
+    else encoded = await this.protoEncode(typeof decoded === 'object' ? JSON.stringify(decoded) : decoded)
+
     const uint8Array = new Uint8Array(encoded.length + codec.codecBuffer.length)
     uint8Array.set(codec.codecBuffer)
     uint8Array.set(encoded, codec.codecBuffer.length)
+
     this.encoded = uint8Array
     return this.encoded
   }
