@@ -73,7 +73,7 @@ export default {
   },
   // chat message
   'chat-message': {
-    codec: parseInt('636d', 16),
+    codec: parseInt('70636d', 16),
     hashAlg: 'dbl-keccak-256',
   },
   'peernet-file' : {
