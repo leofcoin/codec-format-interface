@@ -1,5 +1,5 @@
 import bs32 from '@vandeurenglenn/base32';
-import bs58 from '@vandeurenglenn/base58';
+import base58 from '@vandeurenglenn/base58';
 import isHex from '@vandeurenglenn/is-hex';
 
 export default class BasicInterface {
@@ -19,7 +19,7 @@ export default class BasicInterface {
     return bs32.isBase32(string)
   }
   isBase58(string) {
-    return bs58.isBase58(string)
+    return base58.isBase58(string)
   }
   /**
    * @param {String} encoded
@@ -32,8 +32,8 @@ export default class BasicInterface {
   /**
    * @param {String} encoded
    */
-  fromBs58(encoded) {
-    this.encoded = bs58.decode(encoded)
+  frombase58(encoded) {
+    this.encoded = base58.decode(encoded)
     return this.handleDecode()
   }
 
@@ -94,9 +94,9 @@ export default class BasicInterface {
   /**
    * @return {String} encoded
    */
-  async toBs58() {
+  async tobase58() {
     if (!this.encoded) await this.handleEncode()
-    return bs58.encode(this.encoded)
+    return base58.encode(this.encoded)
   }
 
   /**

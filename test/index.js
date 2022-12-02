@@ -1,5 +1,5 @@
-const test = require('tape');
-const {FormatInterface} = require('./../dist/index')
+import test from 'tape'
+import {FormatInterface} from './../dist/index.js'
 
 globalThis.peernet = {codecs: {}}
 class FormatTest extends FormatInterface {
