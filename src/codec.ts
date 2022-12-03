@@ -2,7 +2,7 @@ import varint from 'varint';
 import codecs from './codecs.js'
 import BasicInterface from './basic-interface.js'
 
-export default class PeernetCodec extends BasicInterface {
+export default class Codec extends BasicInterface {
   get codecs() {
     return {...globalThis.peernet.codecs, ...codecs}
   }

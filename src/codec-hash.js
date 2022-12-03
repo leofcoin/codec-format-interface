@@ -1,7 +1,7 @@
-import createKeccakHash from 'keccak';
+import {createKeccak} from 'hash-wasm';
 import varint from 'varint';
 import BasicInterface from './basic-interface.js'
-import Codec from './codec';
+import Codec from './codec.js';
 
 export default class CodecHash extends BasicInterface {
   constructor(buffer, options = {}) {
@@ -9,28 +9,32 @@ export default class CodecHash extends BasicInterface {
     if (options.name) this.name = options.name
     else this.name = 'disco-hash'
     if (options.codecs) this.codecs = options.codecs
-    if (buffer) {
-      if (buffer instanceof Uint8Array) {
-        this.discoCodec = new Codec(buffer, this.codecs)
+    return this.init(buffer)
+  }
+
+  async init(uint8Array) {
+    if (uint8Array) {
+      if (uint8Array instanceof Uint8Array) {
+        this.discoCodec = new Codec(uint8Array, this.codecs)
         const name = this.discoCodec.name
 
         if (name) {
           this.name = name
-          this.decode(buffer)
+          this.decode(uint8Array)
         } else {
-          this.encode(buffer)
+          await this.encode(uint8Array)
         }
       }
 
-      if (typeof buffer === 'string') {
-        if (this.isHex(buffer)) this.fromHex(buffer)
-        if (this.isBase32(buffer)) this.fromBs32(buffer)
-        else if (this.isBase58(buffer)) this.fromBs58(buffer)
-        else throw new Error(`unsupported string ${buffer}`)
-      } else if (typeof buffer === 'object') this.fromJSON(buffer)
+      if (typeof uint8Array === 'string') {
+        if (this.isHex(uint8Array)) await this.fromHex(uint8Array)
+        if (this.isBase32(uint8Array)) await this.fromBs32(uint8Array)
+        else if (this.isBase58(uint8Array)) await this.fromBs58(uint8Array)
+        else throw new Error(`unsupported string ${uint8Array}`)
+      } else if (typeof uint8Array === 'object') await this.fromJSON(uint8Array)
     }
+    return this
   }
-
   get prefix() {
     const length = this.length
     const uint8Array = new Uint8Array(length.length + this.discoCodec.codecBuffer.length)
@@ -56,17 +60,25 @@ export default class CodecHash extends BasicInterface {
     return this.encode(Buffer.from(JSON.stringify(json)))
   }
 
-  encode(buffer, name) {
+  async encode(buffer, name) {
     if (!this.name && name) this.name = name;
     if (!buffer) buffer = this.buffer;
     this.discoCodec = new Codec(this.name, this.codecs)
     this.discoCodec.fromName(this.name)
     let hashAlg = this.discoCodec.hashAlg
+    const hashVariant = Number(hashAlg.split('-')[hashAlg.split('-').length - 1])
+    
     if (hashAlg.includes('dbl')) {
       hashAlg = hashAlg.replace('dbl-', '')
-      buffer = createKeccakHash(hashAlg.replace('-', '')).update(buffer).digest()
+      const hasher = await createKeccak(hashVariant)
+      await hasher.init()
+      hasher.update(buffer)
+      buffer = hasher.digest('binary')
     }
-    this.digest = createKeccakHash(hashAlg.replace('-', '')).update(buffer).digest()
+    const hasher = await createKeccak(hashVariant)
+    await hasher.init()
+    hasher.update(buffer)
+    this.digest = hasher.digest('binary')
     this.size = this.digest.length
 
     this.codec = this.discoCodec.encode();
@@ -80,13 +92,13 @@ export default class CodecHash extends BasicInterface {
     return this.encoded
   }
 
-  validate(buffer) {
+  async validate(buffer) {
     if (Buffer.isBuffer(buffer)) {
       const codec = varint.decode(buffer);
       if (this.codecs[codec]) {
         this.decode(buffer)
       } else {
-        this.encode(buffer)
+        await this.encode(buffer)
       }
     }
     if (typeof buffer === 'string') {

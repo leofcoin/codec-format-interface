@@ -18,9 +18,17 @@ const encoded =  [48,  10,   5, 104, 101, 108, 108, 111]
 test('format', async  (tape) => {
   tape.plan(2)
   const message = await new FormatTest({somedata: 'hello'})
-  await message.encode()
+  
   const m2 = await new FormatTest(message.encoded)
-  await m2.decode()
+  
   tape.ok(message.encoded, 'can encode')
   tape.ok(m2.decoded.somedata === 'hello', 'can decode')
+})
+
+test('format can hash', async  (tape) => {
+  tape.plan(1)
+  const message = await new FormatTest({somedata: 'hello'})
+  const hash = await message.hash()
+  tape.ok(hash, 'can hash')
+  
 })

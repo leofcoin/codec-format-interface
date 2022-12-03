@@ -11,6 +11,7 @@ export default {
   },
       "include": [
       "./src/**/*",
-      "./node_modules/**/*"
+      "./node_modules/**/*",
+      "./typings/**/*"
   ]
 }
