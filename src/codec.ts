@@ -8,7 +8,8 @@ export default class Codec extends BasicInterface {
   hashAlg: string
 
   get codecs() {
-    return {...globalThis.peernet.codecs, ...codecs}
+    const globalCodecs = globalThis.peernet?.codecs || {}
+    return { ...globalCodecs, ...codecs }
   }
   constructor(buffer: string | number | object | Uint8Array | ArrayBuffer) {
     super()
