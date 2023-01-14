@@ -1,6 +1,6 @@
 {
   "name": "@leofcoin/codec-format-interface",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "",
   "type": "module",
   "exports": {
@@ -12,7 +12,7 @@
   "typings": "dist/index.d.ts",
   "scripts": {
     "publish": "npm run build && npm version patch && npm publish",
-    "build": "rollup -c",    
+    "build": "rollup -c",
     "test": "node test"
   },
   "repository": {
