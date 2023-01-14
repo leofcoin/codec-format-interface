@@ -3,17 +3,26 @@ import Hash from './codec-hash.js'
 import Codec from './codec.js';
 
 export default class FormatInterface extends BasicInterface implements FormatInterface {
-  async init(buffer) {
-    if (buffer instanceof Uint8Array) await this.fromUint8Array(buffer)
-    else if (buffer instanceof ArrayBuffer) await this.fromArrayBuffer(buffer)
+
+  set proto(value) {
+    this._proto = value
+    this.keys = Object.keys(this._proto)
+  }
+
+  get proto() {
+    return this._proto
+  }
+  init(buffer) {
+    if (buffer instanceof Uint8Array) this.fromUint8Array(buffer)
+    else if (buffer instanceof ArrayBuffer) this.fromArrayBuffer(buffer)
     else if (buffer?.name === this.name) return buffer
     else if (buffer instanceof String) {
-      if (this.isHex(buffer)) await this.fromHex(buffer)
-      else if (this.isBase32(buffer)) await this.fromBs32(buffer)
-      else if (this.isBase58(buffer)) await this.fromBs58(buffer)
-      else throw new Error(`unsupported string ${buffer}`)
+      if (this.isHex(buffer)) this.fromHex(buffer)
+      else if (this.isBase58(buffer)) this.fromBs58(buffer)
+      else if (this.isBase32(buffer)) this.fromBs32(buffer)
+      else throw new Error(`unsupported ${buffer}`)
     } else {
-      await this.create(buffer)
+      this.create(buffer)
     }
     return this
   }
@@ -24,13 +33,13 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     if (codec.name) return true
   }
 
-  async decode() {
+  decode() {
     let encoded = this.encoded;
     const codec = new Codec(this.encoded)
     if (codec.codecBuffer) {
       encoded = encoded.slice(codec.codecBuffer.length)
       this.name = codec.name
-      this.decoded = await this.protoDecode(encoded)
+      this.decoded = this.protoDecode(encoded)
       try {
         this.decoded = JSON.parse(this.decoded)
       } catch {
@@ -44,13 +53,13 @@ export default class FormatInterface extends BasicInterface implements FormatInt
   }
 
   
-  async encode(decoded?: object | string) {
+  encode(decoded?: object) {
     let encoded: Uint8Array
     if (!decoded) decoded = this.decoded;
     const codec = new Codec(this.name)
 
     if (decoded instanceof Uint8Array) encoded = decoded
-    else encoded = await this.protoEncode(typeof decoded === 'object' ? JSON.stringify(decoded) : decoded)
+    else encoded = this.protoEncode(decoded)
 
     if (codec.codecBuffer) {
       const uint8Array = new Uint8Array(encoded.length + codec.codecBuffer.length)
@@ -64,7 +73,7 @@ export default class FormatInterface extends BasicInterface implements FormatInt
   }
   /**
    * @param {Buffer|String|Object} buffer - data - The data needed to create the desired message
-   * @param {Object} proto - {encode, decode}
+   * @param {Object} proto - {protoObject}
    * @param {Object} options - {hashFormat, name}
    */
   constructor(buffer, proto, options = {}) {
@@ -72,7 +81,7 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     this.proto = proto
     this.hashFormat = options.hashFormat || 'bs32'
     if (options.name) this.name = options.name
-    return this.init(buffer)
+    this.init(buffer)
   }
 
   /**

@@ -1,6 +1,6 @@
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
+import tsConfig from './tsconfig.json' assert { type: 'json' }
+
 export default [{
   input: ['src/index.ts'],
   output: [{
@@ -8,8 +8,6 @@ export default [{
     format: 'es'
   }],
   plugins: [
-    commonjs(),
-    resolve({preferBuiltins: true}),
-    typescript()
+    typescript(tsConfig)
   ]
 }]

@@ -1,28 +1,27 @@
 import bs32 from '@vandeurenglenn/base32';
 import base58 from '@vandeurenglenn/base58';
 import isHex from '@vandeurenglenn/is-hex';
+import proto from '@vandeurenglenn/proto-array'
+import { fromBase32, fromBase58, fromString, fromHex, fromArrayLike, fromUintArrayString, toBase32, toBase58, toHex } from '@vandeurenglenn/typed-array-utils'
 
 
-export default class BasicInterface implements basicInterface {
+export default class BasicInterface {
   encoded: Uint8Array;
   decoded: object | string;
   keys: string[]
   name: string
   // get Codec(): Codec {}
 
-  async protoEncode(data: string): Promise<Uint8Array> {
+  protoEncode(data: object): Uint8Array {
     // check schema
-    return new TextEncoder().encode(data)
+    
+    return proto.encode(this.proto, data)
   }
 
-  async protoDecode(data: Uint8Array): Promise<string> {
+  protoDecode(data: Uint8Array): object {
     // check schema
-    return new TextDecoder().decode(data)
+    return proto.decode(this.proto, data)
   }
-
-  decode: () => DecodeResult;
-  
-  encode:() => Promise<Uint8Array>;
 
   isHex(string: any) {
     return isHex(string)
@@ -34,14 +33,14 @@ export default class BasicInterface implements basicInterface {
     return base58.isBase58(string)
   }
 
-  fromBs32(encoded: base58): DecodeResult {
+  fromBs32(encoded: base58String): object {
     this.encoded = bs32.decode(encoded)
     return this.decode()
   }
 
 
-  fromBs58(encoded: any): DecodeResult {
-    this.encoded = base58.decode(encoded)
+  fromBs58(encoded: any): object {
+    this.encoded = fromBase58(encoded)
     return this.decode()
   }
 
@@ -60,6 +59,11 @@ export default class BasicInterface implements basicInterface {
     return this.decode()
   }
 
+  fromHex(string) {
+    this.encoded = fromHex(string)
+    return this.decode()
+  }
+
   fromArray(array: number[]): object {
     this.encoded = Uint8Array.from([...array])
     return this.decode()
@@ -70,37 +74,30 @@ export default class BasicInterface implements basicInterface {
     return this.decode()
   }
 
-  fromHex(encoded: string): Promise<string | object> {
-    this.encoded = Buffer.from(encoded, 'hex')
-    return this.decode()
+  toString(): string {
+    if (!this.encoded) this.encode()
+    return this.encoded.toString()
   }
 
-  async toString(encoding: string = 'utf8'): Promise<string> {
-    if (!this.encoded) await this.encode()
-    return this.encoded.toString(encoding)
-  }
-
-  /**
-   * @return {String} encoded
-   */
   toHex() {
-    return this.toString('hex')
+    if (!this.encoded) this.encode()
+    return toHex(this.encoded)
   }
 
   /**
    * @return {String} encoded
    */
-  async toBs32() {
-    if (!this.encoded) await this.encode()
-    return bs32.encode(this.encoded)
+  toBs32() {
+    if (!this.encoded) this.encode()
+    return toBase32(this.encoded)
   }
 
   /**
    * @return {String} encoded
    */
-  async toBs58() {
-    if (!this.encoded) await this.encode()
-    return base58.encode(this.encoded)
+  toBs58() {
+    if (!this.encoded) this.encode()
+    return toBase58(this.encoded)
   }
 
   /**
