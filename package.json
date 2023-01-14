@@ -1,12 +1,14 @@
 {
   "name": "@leofcoin/codec-format-interface",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "",
   "type": "module",
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "typings": "dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
