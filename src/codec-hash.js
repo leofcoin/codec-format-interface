@@ -27,7 +27,7 @@ export default class CodecHash extends BasicInterface {
       }
 
       if (typeof uint8Array === 'string') {
-        if (this.isHex(uint8Array)) await this.fromHex(uint8Array)
+        if (this.isHex(uint8Array)) await this.fromHex({ string: uint8Array })
         if (this.isBase32(uint8Array)) await this.fromBs32(uint8Array)
         else if (this.isBase58(uint8Array)) await this.fromBs58(uint8Array)
         else throw new Error(`unsupported string ${uint8Array}`)
@@ -102,7 +102,7 @@ export default class CodecHash extends BasicInterface {
       }
     }
     if (typeof buffer === 'string') {
-      if (this.isHex(buffer)) this.fromHex(buffer)
+      if (this.isHex(buffer)) this.fromHex({ string: buffer })
       if (this.isBase32(buffer)) this.fromBs32(buffer)
     }
     if (typeof buffer === 'object') this.fromJSON(buffer)

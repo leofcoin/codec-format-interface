@@ -3,10 +3,14 @@ import codecs from './codecs.js'
 import BasicInterface from './basic-interface.js'
 
 export default class Codec extends BasicInterface {
+  codecBuffer: Uint8Array
+  codec: number
+  hashAlg: string
+
   get codecs() {
     return {...globalThis.peernet.codecs, ...codecs}
   }
-  constructor(buffer) {
+  constructor(buffer: string | number | object | Uint8Array | ArrayBuffer) {
     super()
     if (buffer) {
       if (buffer instanceof Uint8Array) {
@@ -20,40 +24,38 @@ export default class Codec extends BasicInterface {
           this.encode(buffer)
         }
       } else if (buffer instanceof ArrayBuffer) {
-        const encoded = new Uint8Array(buffer.byteLength)
-
-        for (let i = 0; i < buffer.byteLength; i++) {
-          encoded[i] = buffer[i]
+        const codec = varint.decode(buffer);
+        const name = this.getCodecName(codec)
+        if (name) {
+          this.name = name
+          this.decode(buffer as Uint8Array)
+        } else {
+          this.encode(buffer)
         }
-        this.encoded = encoded
-        // this.encoded = new Uint8Array(buffer, buffer.byteOffset, buffer.byteLength)
-        this.decode(buffer)
-        return
-      }
-      if (typeof buffer === 'string') {
+      } else if (typeof buffer === 'string') {
         if (this.codecs[buffer]) this.fromName(buffer)
         else if (this.isHex(buffer)) this.fromHex(buffer)
         else if (this.isBase32(buffer)) this.fromBs32(buffer)
         else if (this.isBase58(buffer)) this.fromBs58(buffer)
         else throw new Error(`unsupported string ${buffer}`)
       }
-      if (!isNaN(buffer)) if (this.codecs[this.getCodecName(buffer)]) this.fromCodec(buffer)
+      if (!isNaN(buffer as number)) if (this.codecs[this.getCodecName(buffer as number)]) this.fromCodec(buffer)
     }
   }
 
-  fromEncoded(encoded) {
+  fromEncoded(encoded: Uint8Array): object {
     const codec = varint.decode(encoded);
     const name = this.getCodecName(codec)
     this.name = name
     this.encoded = encoded
-    this.decode(encoded)
+    return this.decode(encoded)
   }
 
-  getCodec(name) {
+  getCodec(name: string): number {
     return this.codecs[name].codec
   }
 
-  getCodecName(codec) {
+  getCodecName(codec: number): string {
     return Object.keys(this.codecs).reduce((p, c) => {
       const item = this.codecs[c]
       if (item.codec === codec) return c;
@@ -61,11 +63,11 @@ export default class Codec extends BasicInterface {
     }, undefined)
   }
 
-  getHashAlg(name) {
+  getHashAlg(name: string): string {
     return this.codecs[name].hashAlg
   }
 
-  fromCodec(codec) {
+  fromCodec(codec: number) {
     this.name = this.getCodecName(codec)
     this.hashAlg = this.getHashAlg(this.name)
 
@@ -73,7 +75,7 @@ export default class Codec extends BasicInterface {
     this.codecBuffer = varint.encode(codec)
   }
 
-  fromName(name) {
+  fromName(name: string) {
     const codec = this.getCodec(name)
     this.name = name
     this.codec = codec
@@ -81,14 +83,16 @@ export default class Codec extends BasicInterface {
     this.codecBuffer = varint.encode(codec)
   }
 
-  decode() {
-    const codec = varint.decode(this.encoded);
+  decode(encoded?: Uint8Array): object {
+    encoded = encoded || this.encoded
+    const codec = varint.decode(encoded);
     this.fromCodec(codec)
+    return this.decoded
   }
 
-  encode() {
-    const codec = varint.encode(this.decoded)
-    this.encoded = codec
+  encode(codec?: number): Uint8Array {
+    codec = codec || this.codec    
+    this.encoded = varint.encode(codec)
     return this.encoded
   }
 }

@@ -3,26 +3,19 @@ import Hash from './codec-hash.js'
 import Codec from './codec.js';
 
 export default class FormatInterface extends BasicInterface implements FormatInterface {
+  hashFormat: string
 
-  set proto(value) {
-    this._proto = value
-    this.keys = Object.keys(this._proto)
-  }
-
-  get proto() {
-    return this._proto
-  }
-  init(buffer) {
+  init(buffer: Uint8Array | ArrayBuffer | FormatInterface | string) {
     if (buffer instanceof Uint8Array) this.fromUint8Array(buffer)
     else if (buffer instanceof ArrayBuffer) this.fromArrayBuffer(buffer)
-    else if (buffer?.name === this.name) return buffer
+    else if (buffer instanceof FormatInterface && buffer?.name === this.name) return buffer
     else if (buffer instanceof String) {
-      if (this.isHex(buffer)) this.fromHex(buffer)
-      else if (this.isBase58(buffer)) this.fromBs58(buffer)
-      else if (this.isBase32(buffer)) this.fromBs32(buffer)
+      if (this.isHex(buffer as string)) this.fromHex(buffer as string)
+      else if (this.isBase58(buffer as string)) this.fromBs58(buffer as base58String)
+      else if (this.isBase32(buffer as string)) this.fromBs32(buffer as string)
       else throw new Error(`unsupported ${buffer}`)
     } else {
-      this.create(buffer)
+      this.create(buffer as object)
     }
     return this
   }
@@ -33,18 +26,18 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     if (codec.name) return true
   }
 
-  decode() {
-    let encoded = this.encoded;
+  decode(encoded?: Uint8Array): object {
+    encoded = encoded || this.encoded;
     const codec = new Codec(this.encoded)
     if (codec.codecBuffer) {
       encoded = encoded.slice(codec.codecBuffer.length)
       this.name = codec.name
       this.decoded = this.protoDecode(encoded)
-      try {
-        this.decoded = JSON.parse(this.decoded)
-      } catch {
+      // try {
+      //   this.decoded = JSON.parse(this.decoded)
+      // } catch {
         
-      }
+      // }
     } else {
       throw new Error(`no codec found`)
     }
@@ -76,11 +69,13 @@ export default class FormatInterface extends BasicInterface implements FormatInt
    * @param {Object} proto - {protoObject}
    * @param {Object} options - {hashFormat, name}
    */
-  constructor(buffer, proto, options = {}) {
+  constructor(buffer, proto, options?: { hashFormat?: string, name?: string }) {
     super()
     this.proto = proto
-    this.hashFormat = options.hashFormat || 'bs32'
-    if (options.name) this.name = options.name
+    this.hashFormat = options?.hashFormat ? options.hashFormat : 'bs32'
+    
+    if (options?.name) this.name = options.name
+
     this.init(buffer)
   }
 
