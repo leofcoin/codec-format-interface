@@ -1,5 +1,5 @@
 import varint from 'varint';
-import codecs from './codecs.js'
+import { utils as codecUtils} from '@leofcoin/codecs'
 import BasicInterface from './basic-interface.js'
 
 export default class Codec extends BasicInterface {
@@ -7,10 +7,6 @@ export default class Codec extends BasicInterface {
   codec: number
   hashAlg: string
 
-  get codecs() {
-    const globalCodecs = globalThis.peernet?.codecs || {}
-    return { ...globalCodecs, ...codecs }
-  }
   constructor(buffer: string | number | object | Uint8Array | ArrayBuffer) {
     super()
     if (buffer) {
@@ -34,13 +30,13 @@ export default class Codec extends BasicInterface {
           this.encode(buffer)
         }
       } else if (typeof buffer === 'string') {
-        if (this.codecs[buffer]) this.fromName(buffer)
+        if (codecUtils.getCodec[buffer]) this.fromName(buffer)
         else if (this.isHex(buffer)) this.fromHex(buffer)
         else if (this.isBase32(buffer)) this.fromBs32(buffer)
         else if (this.isBase58(buffer)) this.fromBs58(buffer)
         else throw new Error(`unsupported string ${buffer}`)
       }
-      if (!isNaN(buffer as number)) if (this.codecs[this.getCodecName(buffer as number)]) this.fromCodec(buffer)
+      if (!isNaN(buffer as number)) if (codecUtils.getCodec(buffer as number)) this.fromCodec(buffer)
     }
   }
 
@@ -53,19 +49,15 @@ export default class Codec extends BasicInterface {
   }
 
   getCodec(name: string): number {
-    return this.codecs[name].codec
+    return codecUtils.getCodec(name)
   }
 
   getCodecName(codec: number): string {
-    return Object.keys(this.codecs).reduce((p, c) => {
-      const item = this.codecs[c]
-      if (item.codec === codec) return c;
-      else return p;
-    }, undefined)
+    return codecUtils.getCodecName(codec)
   }
 
   getHashAlg(name: string): string {
-    return this.codecs[name].hashAlg
+    return codecUtils.getHashAlg(name)
   }
 
   fromCodec(codec: number) {

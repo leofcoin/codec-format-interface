@@ -8,7 +8,7 @@ class FormatTest extends FormatInterface {
   constructor(data) {
     super(data, {
       somedata: 'test'
-    } , {name: 'disco-hash'})
+    } , {name: 'peernet-ps'})
   }
 }
 
@@ -28,6 +28,7 @@ test('format can hash', async  (tape) => {
   tape.plan(1)
   const message = new FormatTest({somedata: 'hello'})
   const hash = await message.hash()
+  console.log(hash);
   tape.ok(hash, 'can hash')
   
 })

@@ -11,7 +11,7 @@
   ],
   "typings": "dist/index.d.ts",
   "scripts": {
-    "publish": "npm run build && npm version patch && npm publish",
+    "prepublish": "npm run build && npm version patch",
     "build": "rollup -c",
     "test": "node test"
   },
@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/leofcoin/codec-format-interface#readme",
   "dependencies": {
+    "@leofcoin/codecs": "^1.0.0",
     "@vandeurenglenn/base32": "^1.1.0",
     "@vandeurenglenn/base58": "^1.1.1",
     "@vandeurenglenn/is-hex": "^1.0.0",
