@@ -30,7 +30,7 @@ export default class Codec extends BasicInterface {
           this.encode(buffer)
         }
       } else if (typeof buffer === 'string') {
-        if (codecUtils.getCodec[buffer]) this.fromName(buffer)
+        if (codecUtils.getCodec(buffer)) this.fromName(buffer)
         else if (this.isHex(buffer)) this.fromHex(buffer)
         else if (this.isBase32(buffer)) this.fromBs32(buffer)
         else if (this.isBase58(buffer)) this.fromBs58(buffer)
