@@ -113,25 +113,4 @@ export default class BasicInterface {
     if (!this.encoded) this.encode()
     return toBase58(this.encoded)
   }
-
-  /**
-   * @param {Object} data
-   */
-  create(data: object): Uint8Array {
-    const decoded = {}
-    if (this.keys?.length > 0) {
-      for (const key of this.keys) {
-        Object.defineProperties(decoded, {
-          [key]: {
-            enumerable: true,
-            configurable: true,
-            set: (value) => value = data[key],
-            get: () => data[key]
-          }
-        })
-      }
-      this.decoded = decoded
-      return this.encode(decoded)
-    }
-  }
 }

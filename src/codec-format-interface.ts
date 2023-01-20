@@ -9,11 +9,11 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     if (buffer instanceof Uint8Array) this.fromUint8Array(buffer)
     else if (buffer instanceof ArrayBuffer) this.fromArrayBuffer(buffer)
     else if (buffer instanceof FormatInterface && buffer?.name === this.name) return buffer
-    else if (buffer instanceof String) {
+    else if (typeof buffer === 'string') {
       if (this.isHex(buffer as string)) this.fromHex(buffer as string)
       else if (this.isBase58(buffer as string)) this.fromBs58(buffer as base58String)
       else if (this.isBase32(buffer as string)) this.fromBs32(buffer as string)
-      else throw new Error(`unsupported ${buffer}`)
+      else this.fromString(buffer as string)
     } else {
       this.create(buffer as object)
     }
@@ -107,5 +107,26 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     return this.hasCodec() ? this.decode() : this.create(
       JSON.parse(new TextDecoder().decode(this.encoded))
     )
+  }
+
+  /**
+   * @param {Object} data
+   */
+  create(data: object): Uint8Array {
+    const decoded = {}
+    if (this.keys?.length > 0) {
+      for (const key of this.keys) {
+        Object.defineProperties(decoded, {
+          [key]: {
+            enumerable: true,
+            configurable: true,
+            set: (value) => value = data[key],
+            get: () => data[key]
+          }
+        })
+      }
+      this.decoded = decoded
+      return this.encode(decoded)
+    }
   }
 }
