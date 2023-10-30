@@ -83,7 +83,10 @@ export default class FormatInterface extends BasicInterface implements FormatInt
    * @return {PeernetHash}
    */
   get peernetHash() {
-    return new Hash(this.decoded, {name: this.name})
+    const decoded = this.decoded
+    // @ts-ignore
+    delete decoded.hash
+    return new Hash(decoded, {name: this.name})
   }
 
   /**

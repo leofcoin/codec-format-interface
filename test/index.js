@@ -1,6 +1,6 @@
 import test from 'tape'
 import {FormatInterface, codecs} from './../dist/index.js'
-
+const _hash = "IHT4DAQGU4CIFPGPGMG4Y2UWETXU6K52VEGGXLAC7DXZYAV67HM233RIUGC"
 globalThis.peernet = {codecs: {}}
 class FormatTest extends FormatInterface {
   get messageName() { return 'Message' }
@@ -29,7 +29,7 @@ test('format can hash', async  (tape) => {
   const message = new FormatTest({somedata: 'hello'})
   const hash = await message.hash()
   console.log(hash);
-  tape.ok(hash, 'can hash')
+  tape.ok(hash === _hash, 'can hash')
   
 })
 
