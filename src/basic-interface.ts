@@ -6,11 +6,29 @@ import { fromBase32, fromBase58, fromString, fromHex, fromArrayLike, fromUintArr
 
 
 export default class BasicInterface {
-  encoded: Uint8Array;
-  decoded: object;
+  #encoded: Uint8Array;
+  #decoded: object;
   keys: string[]
   name: string
   #proto: object
+
+  get encoded() {
+    if (!this.#encoded) this.#encoded = this.encode()
+    return this.#encoded
+  }
+
+  set encoded(value) {
+    this.#encoded = value
+  }
+
+  get decoded() {
+    if (!this.#decoded) this.#decoded = this.decode()
+    return this.#decoded
+  }
+
+  set decoded(value) {
+    this.#decoded = value
+  }
 
   set proto(value) {
     this.#proto = value

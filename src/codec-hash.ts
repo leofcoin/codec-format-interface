@@ -62,10 +62,10 @@ export default class CodecHash extends BasicInterface {
     return this.encode(Buffer.from(JSON.stringify(json)))
   }
 
-  async encode(buffer, name) {
+  async encode(buffer, name?) {
     if (!this.name && name) this.name = name;
     if (!buffer) buffer = this.buffer;
-    this.discoCodec = new Codec(this.name, this.codecs)
+    this.discoCodec = new Codec(this.name)
     this.discoCodec.fromName(this.name)
     let hashAlg = this.discoCodec.hashAlg
     const hashVariant = Number(hashAlg.split('-')[hashAlg.split('-').length - 1])
