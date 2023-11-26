@@ -4,12 +4,12 @@
   "description": "",
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./exports/index.js"
   },
   "files": [
     "exports"
   ],
-  "typings": "dist/index.d.ts",
+  "typings": "exports/index.d.ts",
   "scripts": {
     "prepublish": "npm run build && npm version patch",
     "build": "rollup -c",
