@@ -131,7 +131,7 @@ export default class FormatInterface extends BasicInterface implements FormatInt
         decoded[key] = data[key]
       }
       this.decoded = decoded
-      // return this.encode(decoded)
+      return this.encode(decoded)
     }
   }
 }
