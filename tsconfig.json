@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-      "outDir": "./dist",
+      "outDir": "./exports",
       "esModuleInterop": true,
       "allowSyntheticDefaultImports": true,
       "allowJs": true,
       "target": "es2022",
-      "module": "es2022",
-      "moduleResolution": "nodeNext",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
       "declaration": true
   },
   "include": [

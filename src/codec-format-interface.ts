@@ -1,9 +1,10 @@
 import BasicInterface from './basic-interface.js'
-import Hash from './codec-hash.js'
 import Codec from './codec.js';
+import Hash from './codec-hash.js';
 
 export default class FormatInterface extends BasicInterface implements FormatInterface {
   hashFormat: string
+  #hash
 
   init(buffer: Uint8Array | ArrayBuffer | FormatInterface | string) {
     if (buffer instanceof Uint8Array) this.fromUint8Array(buffer)
@@ -28,7 +29,7 @@ export default class FormatInterface extends BasicInterface implements FormatInt
 
   decode(encoded?: Uint8Array): object {
     encoded = encoded || this.encoded;
-    const codec = new Codec(this.encoded)
+    const codec = new Codec(encoded)
     if (codec.codecBuffer) {
       encoded = encoded.slice(codec.codecBuffer.length)
       this.name = codec.name
@@ -48,7 +49,7 @@ export default class FormatInterface extends BasicInterface implements FormatInt
   
   encode(decoded?: object) {
     let encoded: Uint8Array
-    if (!decoded) decoded = this.decoded;
+    decoded = decoded || this.decoded;
     const codec = new Codec(this.name)
 
     if (decoded instanceof Uint8Array) encoded = decoded
@@ -79,6 +80,11 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     this.init(buffer)
   }
 
+  get format() {
+    const upper = this.hashFormat.charAt(0).toUpperCase()
+    return `${upper}${this.hashFormat.substring(1, this.hashFormat.length)}`
+  }
+
   /**
    * @return {PeernetHash}
    */
@@ -93,9 +99,11 @@ export default class FormatInterface extends BasicInterface implements FormatInt
    * @return {peernetHash}
    */
   async hash() {
+    if (this.#hash) return this.#hash
     const upper = this.hashFormat.charAt(0).toUpperCase()
     const format = `${upper}${this.hashFormat.substring(1, this.hashFormat.length)}`
-    return (await this.peernetHash)[`to${format}`]()
+    this.#hash = (await this.peernetHash)[`to${format}`]()
+    return this.#hash
   }
 
   fromUint8Array(buffer) {
@@ -117,19 +125,13 @@ export default class FormatInterface extends BasicInterface implements FormatInt
    */
   create(data: object): Uint8Array {
     const decoded = {}
+    if (data.hash) this.#hash = data.hash
     if (this.keys?.length > 0) {
       for (const key of this.keys) {
-        Object.defineProperties(decoded, {
-          [key]: {
-            enumerable: true,
-            configurable: true,
-            set: (value) => value = data[key],
-            get: () => data[key]
-          }
-        })
+        decoded[key] = data[key]
       }
       this.decoded = decoded
-      return this.encode(decoded)
+      // return this.encode(decoded)
     }
   }
 }

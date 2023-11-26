@@ -4,6 +4,8 @@ import BasicInterface from './basic-interface.js'
 import Codec from './codec.js';
 
 export default class CodecHash extends BasicInterface {
+  codec
+  discoCodec
   constructor(buffer, options = {}) {
     super()
     if (options.name) this.name = options.name
@@ -70,16 +72,24 @@ export default class CodecHash extends BasicInterface {
     
     if (hashAlg.includes('dbl')) {
       hashAlg = hashAlg.replace('dbl-', '')
-      const hasher = await createKeccak(hashVariant)
-      await hasher.init()
-      hasher.update(buffer)
-      buffer = hasher.digest('binary')
+      // const hasher = await createKeccak(hashVariant)
+      // await hasher.init()
+      // hasher.update(buffer)
+      // buffer = hasher.digest('binary')
+      
+      buffer = await crypto.subtle.digest(`SHA-${hashVariant}`, buffer)
     }
-    const hasher = await createKeccak(hashVariant)
-    await hasher.init()
-    hasher.update(buffer)
-    this.digest = hasher.digest('binary')
+    // const hasher = await createKeccak(hashVariant)
+    // await hasher.init()
+    // hasher.update(buffer)
+    // this.digest = hasher.digest('binary')
+    this.digest = await crypto.subtle.digest(`SHA-${hashVariant}`, buffer)
+    if (this.digest instanceof ArrayBuffer) {
+      this.digest = new Uint8Array(this.digest)
+    }
+    
     this.size = this.digest.length
+    
 
     this.codec = this.discoCodec.encode();
     this.codec = this.discoCodec.codecBuffer

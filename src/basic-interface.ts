@@ -35,12 +35,12 @@ export default class BasicInterface {
   protoEncode(data: object): Uint8Array {
     // check schema
     
-    return proto.encode(this.proto, data)
+    return proto.encode(this.proto, data, false)
   }
 
   protoDecode(data: Uint8Array): object {
     // check schema
-    return proto.decode(this.proto, data)
+    return proto.decode(this.proto, data, false)
   }
 
   isHex(string: string): boolean {
