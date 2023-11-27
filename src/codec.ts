@@ -65,6 +65,12 @@ export default class Codec extends BasicInterface {
     this.hashAlg = this.getHashAlg(this.name)
     this.codec = this.getCodec(this.name)
     this.codecBuffer = varint.encode(this.codec)
+    this.decoded = {
+      name: this.name,
+      hashAlg: this.hashAlg,
+      codec: this.codec,
+      codecBuffer: this.codecBuffer
+    }
   }
 
   fromName(name: string) {
@@ -73,6 +79,12 @@ export default class Codec extends BasicInterface {
     this.codec = codec
     this.hashAlg = this.getHashAlg(name)
     this.codecBuffer = varint.encode(this.codec)
+    this.decoded = {
+      name: this.name,
+      hashAlg: this.hashAlg,
+      codec: this.codec,
+      codecBuffer: this.codecBuffer
+    }
   }
 
   decode(encoded?: Uint8Array): object {
