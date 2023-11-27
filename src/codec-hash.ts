@@ -59,7 +59,7 @@ export default class CodecHash extends BasicInterface {
   }
 
   fromJSON(json) {
-    return this.encode(Buffer.from(JSON.stringify(json)))
+    return this.encode(new TextEncoder().encode(JSON.stringify(json)))
   }
 
   async encode(buffer, name?) {
