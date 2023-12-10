@@ -1,16 +1,32 @@
-import bs32 from '@vandeurenglenn/base32';
-import base58 from '@vandeurenglenn/base58';
-import isHex from '@vandeurenglenn/is-hex';
+import base32 from '@vandeurenglenn/base32'
+import base58 from '@vandeurenglenn/base58'
+import type { base58String } from '@vandeurenglenn/base58'
+import type { base32String } from '@vandeurenglenn/base32'
+import isHex from '@vandeurenglenn/is-hex'
 import proto from '@vandeurenglenn/proto-array'
-import { fromBase32, fromBase58, fromString, fromHex, fromArrayLike, fromUintArrayString, toBase32, toBase58, toHex } from '@vandeurenglenn/typed-array-utils'
-
+import {
+  fromBase32,
+  fromBase58,
+  fromString,
+  fromHex,
+  fromArrayLike,
+  fromUintArrayString,
+  toBase32,
+  toBase58,
+  toHex
+} from '@vandeurenglenn/typed-array-utils'
 
 export default class BasicInterface {
-  #encoded: Uint8Array;
-  #decoded: object;
-  keys: string[]
+  #encoded: Uint8Array
+  #decoded: object
   name: string
   #proto: object
+
+  get keys() {
+    // handles proto keys
+    // protokey -> key
+    return Object.keys(this.#proto).map((key) => (key.endsWith('?') ? key.split('?')[0] : key))
+  }
 
   get encoded() {
     if (!this.#encoded) this.#encoded = this.encode()
@@ -32,7 +48,6 @@ export default class BasicInterface {
 
   set proto(value) {
     this.#proto = value
-    this.keys = Object.keys(value)
   }
 
   get proto() {
@@ -52,7 +67,7 @@ export default class BasicInterface {
 
   protoEncode(data: object): Uint8Array {
     // check schema
-    
+
     return proto.encode(this.proto, data, false)
   }
 
@@ -65,16 +80,15 @@ export default class BasicInterface {
     return isHex(string)
   }
   isBase32(string: string): boolean {
-    return bs32.isBase32(string)
+    return base32.isBase32(string)
   }
   isBase58(string: string): boolean {
     return base58.isBase58(string)
   }
 
   fromBs32(encoded: string): object {
-    return this.decode(bs32.decode(encoded))
+    return this.decode(base32.decode(encoded))
   }
-
 
   fromBs58(encoded: base58String): object {
     return this.decode(fromBase58(encoded))
@@ -90,7 +104,7 @@ export default class BasicInterface {
 
   fromString(string: string): object {
     const array: string[] = string.split(',')
-    const arrayLike = array.map(string => Number(string))
+    const arrayLike = array.map((string) => Number(string))
     return this.decode(Uint8Array.from(arrayLike))
   }
 
@@ -113,13 +127,18 @@ export default class BasicInterface {
 
   toHex(): string {
     if (!this.encoded) this.encode()
-    return toHex(this.encoded.toString().split(',').map(number => Number(number)))
+    return toHex(
+      this.encoded
+        .toString()
+        .split(',')
+        .map((number) => Number(number))
+    )
   }
 
   /**
    * @return {String} encoded
    */
-  toBs32(): string {
+  toBs32(): base32String {
     if (!this.encoded) this.encode()
     return toBase32(this.encoded)
   }
