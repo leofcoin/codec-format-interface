@@ -1,6 +1,6 @@
 {
   "name": "@leofcoin/codec-format-interface",
-  "version": "1.7.9",
+  "version": "1.7.10",
   "description": "",
   "type": "module",
   "exports": {
