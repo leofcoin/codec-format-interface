@@ -9,6 +9,15 @@ import type { HexString } from '@vandeurenglenn/is-hex'
 export default class FormatInterface extends BasicInterface implements FormatInterface {
   hashFormat: string
   #hash
+  #encoded
+
+  get encoded() {
+    return this.#encoded || this.encode()
+  }
+
+  set encoded(value) {
+    this.#encoded = value
+  }
 
   init(buffer: Uint8Array | ArrayBuffer | FormatInterface | string) {
     if (buffer instanceof FormatInterface && buffer?.name === this.name) return buffer
