@@ -11,7 +11,6 @@
   ],
   "typings": "exports/index.d.ts",
   "scripts": {
-    "prepublish": "npm run build && npm version patch",
     "build": "rollup -c",
     "test": "node test"
   },
@@ -27,24 +26,22 @@
   },
   "homepage": "https://github.com/leofcoin/codec-format-interface#readme",
   "dependencies": {
-    "@leofcoin/codecs": "^1.0.0",
-    "@leofcoin/crypto": "^0.2.7",
-    "@vandeurenglenn/base32": "^1.1.0",
-    "@vandeurenglenn/base58": "^1.1.1",
-    "@vandeurenglenn/is-hex": "^1.0.0",
-    "@vandeurenglenn/proto-array": "^1.0.0",
-    "@vandeurenglenn/typed-array-utils": "^1.1.0",
-    "hash-wasm": "^4.9.0",
+    "@leofcoin/codecs": "^1.0.6",
+    "@leofcoin/crypto": "^0.2.24",
+    "@vandeurenglenn/base32": "^1.2.4",
+    "@vandeurenglenn/base58": "^1.1.9",
+    "@vandeurenglenn/is-hex": "^1.1.1",
+    "@vandeurenglenn/proto-array": "^1.0.16",
+    "@vandeurenglenn/typed-array-utils": "^1.2.0",
+    "hash-wasm": "^4.11.0",
     "varint": "^6.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^23.0.3",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-typescript": "^10.0.1",
-    "@types/varint": "^6.0.1",
-    "rollup": "^3.5.1",
-    "tape": "^5.5.3",
-    "tinybench": "^2.5.1",
-    "tslib": "^2.4.1"
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/varint": "^6.0.3",
+    "rollup": "^4.22.2",
+    "tape": "^5.9.0",
+    "tinybench": "^2.9.0",
+    "tslib": "^2.7.0"
   }
 }
