@@ -1,23 +1,28 @@
-import {createKeccak} from 'hash-wasm';
-import varint from 'varint';
-import BasicInterface from './basic-interface.js'
-import Codec from './codec.js';
+import varint from 'varint'
+import BasicInterface, { jsonStringifyBigInt } from './basic-interface.js'
+import Codec from './codec.js'
+
+type CodecHashOptions = {
+  name: string
+  codecs: object
+}
 
 export default class CodecHash extends BasicInterface {
-  codec
-  discoCodec
-  constructor(buffer, options = {}) {
+  codec: Uint8Array
+  discoCodec: Codec
+  size: number
+  constructor(buffer, options: CodecHashOptions) {
     super()
-    if (options.name) this.name = options.name
+    if (options?.name) this.name = options.name
     else this.name = 'disco-hash'
-    if (options.codecs) this.codecs = options.codecs
+    if (options?.codecs) this.codecs = options.codecs
     return this.init(buffer)
   }
 
   async init(uint8Array) {
     if (uint8Array) {
       if (uint8Array instanceof Uint8Array) {
-        this.discoCodec = new Codec(uint8Array, this.codecs)
+        this.discoCodec = new Codec(uint8Array)
         const name = this.discoCodec.name
 
         if (name) {
@@ -59,24 +64,24 @@ export default class CodecHash extends BasicInterface {
   }
 
   fromJSON(json) {
-    return this.encode(new TextEncoder().encode(JSON.stringify(json)))
+    return this.encode(new TextEncoder().encode(JSON.stringify(json, jsonStringifyBigInt)))
   }
 
   async encode(buffer, name?) {
-    if (!this.name && name) this.name = name;
-    if (!buffer) buffer = this.buffer;
+    if (!this.name && name) this.name = name
+    if (!buffer) buffer = this.buffer
     this.discoCodec = new Codec(this.name)
     this.discoCodec.fromName(this.name)
     let hashAlg = this.discoCodec.hashAlg
     const hashVariant = Number(hashAlg.split('-')[hashAlg.split('-').length - 1])
-    
+
     if (hashAlg.includes('dbl')) {
       hashAlg = hashAlg.replace('dbl-', '')
       // const hasher = await createKeccak(hashVariant)
       // await hasher.init()
       // hasher.update(buffer)
       // buffer = hasher.digest('binary')
-      
+
       buffer = await crypto.subtle.digest(`SHA-${hashVariant}`, buffer)
     }
     // const hasher = await createKeccak(hashVariant)
@@ -87,11 +92,10 @@ export default class CodecHash extends BasicInterface {
     if (this.digest instanceof ArrayBuffer) {
       this.digest = new Uint8Array(this.digest)
     }
-    
-    this.size = this.digest.length
-    
 
-    this.codec = this.discoCodec.encode();
+    this.size = this.digest.length
+
+    this.codec = this.discoCodec.encode()
     this.codec = this.discoCodec.codecBuffer
     const uint8Array = new Uint8Array(this.digest.length + this.prefix.length)
     uint8Array.set(this.prefix)
@@ -104,7 +108,7 @@ export default class CodecHash extends BasicInterface {
 
   async validate(buffer) {
     if (Buffer.isBuffer(buffer)) {
-      const codec = varint.decode(buffer);
+      const codec = varint.decode(buffer)
       if (this.codecs[codec]) {
         this.decode(buffer)
       } else {
@@ -120,13 +124,13 @@ export default class CodecHash extends BasicInterface {
 
   decode(buffer) {
     this.encoded = buffer
-    const codec = varint.decode(buffer);
+    const codec = varint.decode(buffer)
 
     this.discoCodec = new Codec(codec, this.codecs)
     // TODO: validate codec
-    buffer = buffer.slice(varint.decode.bytes);
-    this.size = varint.decode(buffer);
-    this.digest = buffer.slice(varint.decode.bytes);
+    buffer = buffer.slice(varint.decode.bytes)
+    this.size = varint.decode(buffer)
+    this.digest = buffer.slice(varint.decode.bytes)
     if (this.digest.length !== this.size) {
       throw new Error(`hash length inconsistent: 0x${this.encoded.toString('hex')}`)
     }
@@ -135,7 +139,6 @@ export default class CodecHash extends BasicInterface {
 
     this.name = this.discoCodec.name
 
-
     this.size = this.digest.length
 
     return {
@@ -143,7 +146,7 @@ export default class CodecHash extends BasicInterface {
       name: this.name,
       size: this.size,
       length: this.length,
-      digest: this.digest,
+      digest: this.digest
     }
   }
 }

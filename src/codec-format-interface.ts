@@ -1,4 +1,4 @@
-import BasicInterface from './basic-interface.js'
+import BasicInterface, { jsonParseBigInt } from './basic-interface.js'
 import Codec from './codec.js'
 import Hash from './codec-hash.js'
 
@@ -126,14 +126,14 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     this.encoded = buffer
     return this.hasCodec()
       ? this.decode()
-      : this.create(JSON.parse(new TextDecoder().decode(this.encoded)))
+      : this.create(JSON.parse(new TextDecoder().decode(this.encoded), jsonParseBigInt))
   }
 
   fromArrayBuffer(buffer) {
     this.encoded = new Uint8Array(buffer, buffer.byteOffset, buffer.byteLength)
     return this.hasCodec()
       ? this.decode()
-      : this.create(JSON.parse(new TextDecoder().decode(this.encoded)))
+      : this.create(JSON.parse(new TextDecoder().decode(this.encoded), jsonParseBigInt))
   }
 
   /**

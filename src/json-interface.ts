@@ -1,6 +1,6 @@
-import BasicInterface from './basic-interface.js'
-import Codec from './codec.js';
-import Hash from './codec-hash.js';
+import BasicInterface, { jsonParseBigInt } from './basic-interface.js'
+import Codec from './codec.js'
+import Hash from './codec-hash.js'
 
 export default class JsonInterface extends BasicInterface implements JsonInterface {
   hashFormat: string
@@ -28,28 +28,27 @@ export default class JsonInterface extends BasicInterface implements JsonInterfa
   }
 
   decode(encoded?: string): object {
-    encoded = encoded || this.encoded as unknown as  string;
+    encoded = encoded || (this.encoded as unknown as string)
     const codec = new Codec(encoded)
     if (codec.codecBuffer) {
       encoded = encoded.slice(codec.codecBuffer.length)
       this.name = codec.name
-      this.decoded = JSON.parse(encoded)
+      this.decoded = JSON.parse(encoded, jsonParseBigInt)
       // try {
       //   this.decoded = JSON.parse(this.decoded)
       // } catch {
-        
+
       // }
     } else {
       throw new Error(`no codec found`)
     }
-    
+
     return this.decoded
   }
 
-  
   encode(decoded?: object) {
     let encoded: Uint8Array
-    decoded = decoded || this.decoded;
+    decoded = decoded || this.decoded
     const codec = new Codec(this.name)
 
     if (decoded instanceof Uint8Array) encoded = decoded
@@ -70,11 +69,11 @@ export default class JsonInterface extends BasicInterface implements JsonInterfa
    * @param {Object} proto - {protoObject}
    * @param {Object} options - {hashFormat, name}
    */
-  constructor(buffer, proto, options?: { hashFormat?: string, name?: string }) {
+  constructor(buffer, proto, options?: { hashFormat?: string; name?: string }) {
     super()
     this.proto = proto
     this.hashFormat = options?.hashFormat ? options.hashFormat : 'bs32'
-    
+
     if (options?.name) this.name = options.name
 
     this.init(buffer)
@@ -92,7 +91,7 @@ export default class JsonInterface extends BasicInterface implements JsonInterfa
     const decoded = this.decoded
     // @ts-ignore
     delete decoded.hash
-    return new Hash(decoded, {name: this.name})
+    return new Hash(decoded, { name: this.name })
   }
 
   /**
@@ -108,16 +107,16 @@ export default class JsonInterface extends BasicInterface implements JsonInterfa
 
   fromUint8Array(buffer) {
     this.encoded = buffer
-    return this.hasCodec() ? this.decode() : this.create(
-      JSON.parse(new TextDecoder().decode(this.encoded))
-    )
+    return this.hasCodec()
+      ? this.decode()
+      : this.create(JSON.parse(new TextDecoder().decode(this.encoded), jsonParseBigInt))
   }
 
   fromArrayBuffer(buffer) {
     this.encoded = new Uint8Array(buffer, buffer.byteOffset, buffer.byteLength)
-    return this.hasCodec() ? this.decode() : this.create(
-      JSON.parse(new TextDecoder().decode(this.encoded))
-    )
+    return this.hasCodec()
+      ? this.decode()
+      : this.create(JSON.parse(new TextDecoder().decode(this.encoded), jsonParseBigInt))
   }
 
   /**

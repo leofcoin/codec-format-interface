@@ -16,6 +16,12 @@ import {
   toHex
 } from '@vandeurenglenn/typed-array-utils'
 
+export const jsonStringifyBigInt = (key, value) =>
+  typeof value === 'bigint' ? { $bigint: value.toString() } : value
+
+export const jsonParseBigInt = (key, value) =>
+  typeof value === 'object' && value.$bigint ? BigInt(value.$bigint) : value
+
 export default class BasicInterface {
   #encoded: Uint8Array
   #decoded: object
