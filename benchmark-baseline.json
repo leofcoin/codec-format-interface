@@ -1,0 +1,14 @@
+{
+  "date": "2026-01-26",
+  "results": [
+    { "name": "json to string", "avgLatency": "37.90 ± 0.29%" },
+    { "name": "init message", "avgLatency": "60.25 ± 0.60%" },
+    { "name": "hash message", "avgLatency": "92.02 ± 1.12%" },
+    { "name": "json from string", "avgLatency": "100.87 ± 0.18%" },
+    { "name": "message to string", "avgLatency": "128.43 ± 0.57%" },
+    { "name": "jsonb to string", "avgLatency": "211.69 ± 0.42%" },
+    { "name": "message from string", "avgLatency": "8267.6 ± 1.14%" },
+    { "name": "json to hash", "avgLatency": "9493.6 ± 1.22%" },
+    { "name": "jsonb hash", "avgLatency": "10120 ± 8.95%" }
+  ]
+}

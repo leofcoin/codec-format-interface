@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Benchmark History Plot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 2em;
+      }
+      canvas {
+        max-width: 1000px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Benchmark History</h1>
+    <input type="file" id="fileInput" accept="application/json" />
+    <canvas id="chart" width="1000" height="500"></canvas>
+    <script>
+      const ctx = document.getElementById('chart').getContext('2d')
+      let chart
+      document.getElementById('fileInput').addEventListener('change', function (e) {
+        const file = e.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = function (evt) {
+          const history = JSON.parse(evt.target.result)
+          renderChart(history)
+        }
+        reader.readAsText(file)
+      })
+      function renderChart(history) {
+        // Get all unique task names
+        const taskNames = Array.from(
+          new Set(history.flatMap((run) => run.results.map((r) => r.name)))
+        )
+        // X axis: run dates
+        const labels = history.map((run) => new Date(run.date).toLocaleString())
+        // For each task, build a dataset of avgLatency per run
+        const datasets = taskNames.map((name) => {
+          return {
+            label: name,
+            data: history.map((run) => {
+              const found = run.results.find((r) => r.name === name)
+              return found ? parseFloat(found.avgLatency) : null
+            }),
+            borderWidth: 2,
+            spanGaps: true
+          }
+        })
+        if (chart) chart.destroy()
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: 'Benchmark Latency (ns) Over Time' },
+              legend: { display: true }
+            },
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+              y: { title: { display: true, text: 'Avg Latency (ns)' }, beginAtZero: false }
+            }
+          }
+        })
+      }
+    </script>
+    <p>
+      To view your benchmark history, click "Choose File" and select
+      <code>benchmark-history.json</code> from your project directory.
+    </p>
+  </body>
+</html>

@@ -20,16 +20,22 @@ export default class FormatInterface extends BasicInterface implements FormatInt
   }
 
   init(buffer: Uint8Array | ArrayBuffer | FormatInterface | string) {
-    if (buffer instanceof FormatInterface && buffer?.name === this.name) return buffer
-    else if (buffer instanceof Uint8Array) this.fromUint8Array(buffer)
-    else if (buffer instanceof ArrayBuffer) this.fromArrayBuffer(buffer)
-    else if (typeof buffer === 'string') {
+    if (buffer instanceof FormatInterface && buffer?.name === this.name) {
+      return buffer
+    } else if (buffer instanceof Uint8Array) {
+      this.fromUint8Array(buffer)
+    } else if (buffer instanceof ArrayBuffer) {
+      this.fromArrayBuffer(buffer)
+    } else if (typeof buffer === 'string') {
       if (this.isHex(buffer as HexString)) this.fromHex(buffer as string)
       else if (this.isBase58(buffer as base58String)) this.fromBs58(buffer)
       else if (this.isBase32(buffer as base32String)) this.fromBs32(buffer)
       else this.fromString(buffer as string)
-    } else {
+    } else if (typeof buffer === 'object' && buffer !== null) {
       this.create(buffer as object)
+    } else {
+      // Explicitly reject all other types (number, boolean, undefined, symbol, function, null)
+      throw new TypeError(`Invalid input type for FormatInterface: ${typeof buffer}`)
     }
     return this
   }
@@ -98,7 +104,13 @@ export default class FormatInterface extends BasicInterface implements FormatInt
   }
 
   beforeHashing(decoded: { [index: string]: any }) {
-    delete decoded.hash
+    // Avoid copying if not needed
+    if (decoded && Object.prototype.hasOwnProperty.call(decoded, 'hash')) {
+      // Only copy if hash is present
+      const rest = { ...decoded }
+      delete rest.hash
+      return rest
+    }
     return decoded
   }
 
@@ -126,14 +138,14 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     this.encoded = buffer
     return this.hasCodec()
       ? this.decode()
-      : this.create(JSON.parse(new TextDecoder().decode(this.encoded), jsonParseBigInt))
+      : this.create(JSON.parse(BasicInterface._textDecoder.decode(this.encoded), jsonParseBigInt))
   }
 
   fromArrayBuffer(buffer) {
     this.encoded = new Uint8Array(buffer, buffer.byteOffset, buffer.byteLength)
     return this.hasCodec()
       ? this.decode()
-      : this.create(JSON.parse(new TextDecoder().decode(this.encoded), jsonParseBigInt))
+      : this.create(JSON.parse(BasicInterface._textDecoder.decode(this.encoded), jsonParseBigInt))
   }
 
   /**

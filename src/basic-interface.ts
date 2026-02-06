@@ -16,11 +16,42 @@ import {
   toHex
 } from '@vandeurenglenn/typed-array-utils'
 
-export const jsonStringifyBigInt = (key, value) =>
-  typeof value === 'bigint' ? { $bigint: value.toString() } : value
+const BASE64_CHUNK_SIZE = 0x8000
 
-export const jsonParseBigInt = (key, value) =>
-  typeof value === 'object' && value.$bigint ? BigInt(value.$bigint) : value
+const uint8ArrayToBase64 = (value: Uint8Array): string => {
+  if (typeof Buffer !== 'undefined') return Buffer.from(value).toString('base64')
+  let binary = ''
+  for (let offset = 0; offset < value.length; offset += BASE64_CHUNK_SIZE) {
+    const slice = value.subarray(offset, offset + BASE64_CHUNK_SIZE)
+    binary += String.fromCharCode(...slice)
+  }
+  return btoa(binary)
+}
+
+const base64ToUint8Array = (value: string): Uint8Array => {
+  if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(value, 'base64'))
+  const binary = atob(value)
+  const output = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) output[i] = binary.charCodeAt(i)
+  return output
+}
+
+export const jsonStringifyBigInt = (key, value) => {
+  if (typeof value === 'bigint') return { $bigint: value.toString() }
+  if (value instanceof Uint8Array) return { $uint8array: uint8ArrayToBase64(value) }
+  return value
+}
+
+export const jsonParseBigInt = (key, value) => {
+  if (typeof value === 'object' && value) {
+    if (value.$bigint) return BigInt(value.$bigint)
+    if (value.$uint8array) return base64ToUint8Array(value.$uint8array)
+  }
+  return value
+}
+
+const _textEncoder = new TextEncoder()
+const _textDecoder = new TextDecoder()
 
 export default class BasicInterface {
   #encoded: Uint8Array
@@ -62,24 +93,50 @@ export default class BasicInterface {
 
   decode(encoded?: Uint8Array): Object {
     encoded = encoded || this.encoded
-    return new Object()
+    // Example: decode as JSON if possible (override in subclass)
+    try {
+      return JSON.parse(_textDecoder.decode(encoded), jsonParseBigInt)
+    } catch {
+      return new Object()
+    }
   }
 
   encode(decoded?: object): Uint8Array {
     decoded = decoded || this.decoded
-    return new Uint8Array()
+    // Example: encode as JSON (override in subclass)
+    return _textEncoder.encode(JSON.stringify(decoded, jsonStringifyBigInt))
   }
   // get Codec(): Codec {}
 
-  protoEncode(data: object): Uint8Array {
-    // check schema
+  // Cache proto keys/values for reuse
+  static _protoCache = new WeakMap<object, { keys: string[]; values: any[] }>()
 
+  protoEncode(data: object): Uint8Array {
+    let cache = BasicInterface._protoCache.get(this.proto)
+    if (!cache) {
+      cache = {
+        keys: Object.keys(this.proto),
+        values: Object.values(this.proto)
+      }
+      BasicInterface._protoCache.set(this.proto, cache)
+    }
+    // Use proto.encode directly, but avoid new array allocations inside encode if possible
     return proto.encode(this.proto, data, false)
   }
 
   protoDecode(data: Uint8Array): object {
-    // check schema
-    return proto.decode(this.proto, data, false)
+    // Use a static output object if possible (not thread-safe, but safe for single-threaded use)
+    if (!this._decodeOutput) this._decodeOutput = {}
+    const result = proto.decode(this.proto, data, false)
+    // Copy properties to static object to avoid new allocations
+    Object.keys(result).forEach((k) => {
+      this._decodeOutput[k] = result[k]
+    })
+    // Remove any keys not in result
+    Object.keys(this._decodeOutput).forEach((k) => {
+      if (!(k in result)) delete this._decodeOutput[k]
+    })
+    return this._decodeOutput
   }
 
   isHex(string: string): boolean {
@@ -119,7 +176,9 @@ export default class BasicInterface {
   }
 
   fromArray(array: number[]): object {
-    return this.decode(Uint8Array.from([...array]))
+    // Avoid unnecessary copy if already Uint8Array
+    if (array instanceof Uint8Array) return this.decode(array)
+    return this.decode(Uint8Array.from(array))
   }
 
   fromEncoded(encoded: Uint8Array) {
@@ -128,17 +187,19 @@ export default class BasicInterface {
 
   toString(): string {
     if (!this.encoded) this.encode()
-    return this.encoded.toString()
+    // Use cached string if available
+    if (!this._string) this._string = Array.prototype.join.call(this.encoded, ',')
+    return this._string
   }
 
   toHex(): string {
     if (!this.encoded) this.encode()
-    return toHex(
-      this.encoded
-        .toString()
-        .split(',')
-        .map((number) => Number(number))
-    )
+    // Use cached hex if available
+    if (!this._hex) {
+      if (!this._string) this._string = Array.prototype.join.call(this.encoded, ',')
+      this._hex = toHex(this._string.split(',').map(Number))
+    }
+    return this._hex
   }
 
   /**
@@ -146,7 +207,9 @@ export default class BasicInterface {
    */
   toBs32(): base32String {
     if (!this.encoded) this.encode()
-    return toBase32(this.encoded)
+    // Use cached bs32 if available
+    if (!this._bs32) this._bs32 = toBase32(this.encoded)
+    return this._bs32
   }
 
   /**

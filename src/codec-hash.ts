@@ -1,6 +1,62 @@
 import varint from 'varint'
+import { CID } from 'multiformats/cid'
+import { createSHA1, createSHA224, createSHA256, createSHA384, createSHA512 } from 'hash-wasm'
 import BasicInterface, { jsonStringifyBigInt } from './basic-interface.js'
 import Codec from './codec.js'
+
+const MAX_WEBCRYPTO_INPUT = 0x7fffffff
+const STREAMING_CHUNK_SIZE = 64 * 1024 * 1024
+
+const toUint8Array = (buffer: ArrayBuffer | Uint8Array): Uint8Array =>
+  buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
+
+const getStreamingHasher = async (hashVariant: number) => {
+  switch (hashVariant) {
+    case 1:
+      return createSHA1()
+    case 224:
+      return createSHA224()
+    case 256:
+      return createSHA256()
+    case 384:
+      return createSHA384()
+    case 512:
+      return createSHA512()
+    default:
+      return null
+  }
+}
+
+const digestBuffer = async (hashVariant: number, buffer: ArrayBuffer | Uint8Array) => {
+  const view = toUint8Array(buffer)
+  if (view.byteLength >= MAX_WEBCRYPTO_INPUT) {
+    const hasher = await getStreamingHasher(hashVariant)
+    if (!hasher) {
+      throw new Error(`unsupported streaming hash variant: ${hashVariant}`)
+    }
+    hasher.init()
+    for (let offset = 0; offset < view.byteLength; offset += STREAMING_CHUNK_SIZE) {
+      const end = Math.min(offset + STREAMING_CHUNK_SIZE, view.byteLength)
+      hasher.update(view.subarray(offset, end))
+    }
+    const digest = hasher.digest('binary')
+    return digest instanceof Uint8Array ? digest : new Uint8Array(digest)
+  }
+  const sourceView =
+    view.byteOffset === 0 && view.byteLength === view.buffer.byteLength ? view : view.slice()
+  const digest = await crypto.subtle.digest(`SHA-${hashVariant}`, sourceView.buffer)
+  return new Uint8Array(digest)
+}
+
+const parseCid = (input: string | Uint8Array | ArrayBuffer): CID | null => {
+  try {
+    if (typeof input === 'string') return CID.parse(input)
+    const bytes = input instanceof Uint8Array ? input : new Uint8Array(input)
+    return CID.decode(bytes)
+  } catch {
+    return null
+  }
+}
 
 type CodecHashOptions = {
   name: string
@@ -21,6 +77,16 @@ export default class CodecHash extends BasicInterface {
 
   async init(uint8Array) {
     if (uint8Array) {
+      const cid =
+        typeof uint8Array === 'string'
+          ? parseCid(uint8Array)
+          : uint8Array instanceof Uint8Array || uint8Array instanceof ArrayBuffer
+            ? parseCid(uint8Array)
+            : null
+      if (cid) {
+        await this.fromCID(cid)
+        return this
+      }
       if (uint8Array instanceof Uint8Array) {
         this.discoCodec = new Codec(uint8Array)
         const name = this.discoCodec.name
@@ -77,21 +143,9 @@ export default class CodecHash extends BasicInterface {
 
     if (hashAlg.includes('dbl')) {
       hashAlg = hashAlg.replace('dbl-', '')
-      // const hasher = await createKeccak(hashVariant)
-      // await hasher.init()
-      // hasher.update(buffer)
-      // buffer = hasher.digest('binary')
-
-      buffer = await crypto.subtle.digest(`SHA-${hashVariant}`, buffer)
+      buffer = await digestBuffer(hashVariant, buffer)
     }
-    // const hasher = await createKeccak(hashVariant)
-    // await hasher.init()
-    // hasher.update(buffer)
-    // this.digest = hasher.digest('binary')
-    this.digest = await crypto.subtle.digest(`SHA-${hashVariant}`, buffer)
-    if (this.digest instanceof ArrayBuffer) {
-      this.digest = new Uint8Array(this.digest)
-    }
+    this.digest = await digestBuffer(hashVariant, buffer)
 
     this.size = this.digest.length
 
@@ -103,6 +157,32 @@ export default class CodecHash extends BasicInterface {
 
     this.encoded = uint8Array
 
+    return this.encoded
+  }
+
+  async fromCID(cid: CID | string | Uint8Array | ArrayBuffer) {
+    const parsed =
+      cid instanceof CID
+        ? cid
+        : typeof cid === 'string' || cid instanceof Uint8Array
+          ? parseCid(cid)
+          : parseCid(cid as ArrayBuffer)
+    if (!parsed) throw new Error('invalid cid input')
+
+    if (!this.name) this.name = 'disco-hash'
+    this.discoCodec = new Codec(this.name)
+    this.discoCodec.fromName(this.name)
+
+    this.digest = parsed.multihash.digest
+    this.size = this.digest.length
+
+    this.codec = this.discoCodec.encode()
+    this.codec = this.discoCodec.codecBuffer
+
+    const uint8Array = new Uint8Array(this.digest.length + this.prefix.length)
+    uint8Array.set(this.prefix)
+    uint8Array.set(this.digest, this.prefix.length)
+    this.encoded = uint8Array
     return this.encoded
   }
 
