@@ -1,5 +1,5 @@
-import varint from 'varint';
-import { utils as codecUtils} from '@leofcoin/codecs'
+import varint from 'varint'
+import { utils as codecUtils } from '@leofcoin/codecs'
 import BasicInterface from './basic-interface.js'
 
 export default class Codec extends BasicInterface {
@@ -11,7 +11,7 @@ export default class Codec extends BasicInterface {
     super()
     if (buffer) {
       if (buffer instanceof Uint8Array) {
-        const codec = varint.decode(buffer);
+        const codec = varint.decode(buffer)
         const name = this.getCodecName(codec)
         if (name) {
           this.name = name
@@ -21,7 +21,7 @@ export default class Codec extends BasicInterface {
           this.encode(Number(new TextDecoder().decode(buffer)))
         }
       } else if (buffer instanceof ArrayBuffer) {
-        const codec = varint.decode(buffer);
+        const codec = varint.decode(buffer)
         const name = this.getCodecName(codec)
         if (name) {
           this.name = name
@@ -35,13 +35,14 @@ export default class Codec extends BasicInterface {
         else if (this.isBase32(buffer)) this.fromBs32(buffer)
         else if (this.isBase58(buffer)) this.fromBs58(buffer)
         else this.fromString(buffer)
+      } else if (typeof buffer === 'number') {
+        if (codecUtils.getCodec(buffer)) this.fromCodec(buffer)
       }
-      if (!isNaN(buffer as number)) if (codecUtils.getCodec(buffer as number)) this.fromCodec(buffer as number)
     }
   }
 
   fromEncoded(encoded: Uint8Array): object {
-    const codec = varint.decode(encoded);
+    const codec = varint.decode(encoded)
     const name = this.getCodecName(codec)
     this.name = name
     this.encoded = encoded
@@ -89,13 +90,13 @@ export default class Codec extends BasicInterface {
 
   decode(encoded?: Uint8Array): object {
     encoded = encoded || this.encoded
-    const codec = varint.decode(encoded);
+    const codec = varint.decode(encoded)
     this.fromCodec(codec)
     return this.decoded
   }
 
   encode(codec?: number): Uint8Array {
-    codec = codec || this.codec    
+    codec = codec || this.codec
     this.encoded = varint.encode(codec)
     return this.encoded
   }

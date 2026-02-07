@@ -47,7 +47,7 @@ class B {
 const encoded = new B({ somedata: 'hello' })
 console.log(await encoded.digestMessage())
 
-const bench = new Bench({ time: 100 })
+const bench = new Bench({ time: 500 }) // increased time for catching errors
 
 class FormatTest extends FormatInterface {
   get messageName() {
