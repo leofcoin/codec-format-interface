@@ -38,14 +38,12 @@ const base64ToUint8Array = (value: string): Uint8Array => {
 
 export const jsonStringifyBigInt = (key, value) => {
   if (typeof value === 'bigint') return { $bigint: value.toString() }
-  if (value instanceof Uint8Array) return { $uint8array: uint8ArrayToBase64(value) }
   return value
 }
 
 export const jsonParseBigInt = (key, value) => {
   if (typeof value === 'object' && value) {
     if (value.$bigint) return BigInt(value.$bigint)
-    if (value.$uint8array) return base64ToUint8Array(value.$uint8array)
   }
   return value
 }

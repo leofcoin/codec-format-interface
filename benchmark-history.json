@@ -229,5 +229,478 @@
         "samples": 9909
       }
     ]
+  },
+  {
+    "date": "2026-02-07T17:01:25.676Z",
+    "results": [
+      {
+        "name": "message to string",
+        "avgLatency": "21.95 ± 0.47%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "34980853 ± 0.03%",
+        "medThroughput": "45552757 ± 0",
+        "samples": 4555276
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "44.97 ± 0.42%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "22858357 ± 0.02%",
+        "medThroughput": "23809524 ± 1",
+        "samples": 2223678
+      },
+      {
+        "name": "init message",
+        "avgLatency": "68.91 ± 0.91%",
+        "medLatency": "42.00 ± 1.00",
+        "avgThroughput": "17923149 ± 0.06%",
+        "medThroughput": "23809523 ± 580721",
+        "samples": 1451224
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "98.66 ± 10.80%",
+        "medLatency": "83.00 ± 0.00",
+        "avgThroughput": "12423101 ± 0.06%",
+        "medThroughput": "12048193 ± 0",
+        "samples": 1013606
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "116.93 ± 0.37%",
+        "medLatency": "125.00 ± 0.00",
+        "avgThroughput": "9536530 ± 0.05%",
+        "medThroughput": "8000000 ± 0",
+        "samples": 855223
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "212.45 ± 0.98%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "5593481 ± 0.07%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 470697
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "10106 ± 19.98%",
+        "medLatency": "8458.0 ± 542.00",
+        "avgThroughput": "118324 ± 0.26%",
+        "medThroughput": "118231 ± 8079",
+        "samples": 9896
+      },
+      {
+        "name": "jsonb hash",
+        "avgLatency": "10908 ± 0.93%",
+        "medLatency": "9917.0 ± 1001.0",
+        "avgThroughput": "98094 ± 0.41%",
+        "medThroughput": "100837 ± 10783",
+        "samples": 9169
+      },
+      {
+        "name": "json to hash",
+        "avgLatency": "11011 ± 1.48%",
+        "medLatency": "9958.0 ± 999.00",
+        "avgThroughput": "97872 ± 0.42%",
+        "medThroughput": "100422 ± 10185",
+        "samples": 9082
+      }
+    ]
+  },
+  {
+    "date": "2026-02-07T17:05:26.972Z",
+    "results": [
+      {
+        "name": "message to string",
+        "avgLatency": "23.14 ± 0.41%",
+        "medLatency": "41.00 ± 1.00",
+        "avgThroughput": "33270560 ± 0.03%",
+        "medThroughput": "24390244 ± 580721",
+        "samples": 4321931
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "42.92 ± 0.52%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "23336910 ± 0.02%",
+        "medThroughput": "23809524 ± 1",
+        "samples": 2329925
+      },
+      {
+        "name": "init message",
+        "avgLatency": "72.31 ± 0.66%",
+        "medLatency": "83.00 ± 1.00",
+        "avgThroughput": "17075190 ± 0.06%",
+        "medThroughput": "12048193 ± 143431",
+        "samples": 1382852
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "92.70 ± 2.29%",
+        "medLatency": "83.00 ± 0.00",
+        "avgThroughput": "11947749 ± 0.05%",
+        "medThroughput": "12048193 ± 0",
+        "samples": 1078696
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "126.47 ± 0.39%",
+        "medLatency": "125.00 ± 0.00",
+        "avgThroughput": "8988403 ± 0.05%",
+        "medThroughput": "8000000 ± 0",
+        "samples": 790765
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "212.30 ± 0.95%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "5815526 ± 0.08%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 471028
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "10333 ± 26.26%",
+        "medLatency": "8875.0 ± 125.00",
+        "avgThroughput": "113214 ± 0.16%",
+        "medThroughput": "112676 ± 1610",
+        "samples": 9678
+      },
+      {
+        "name": "json to hash",
+        "avgLatency": "10472 ± 1.47%",
+        "medLatency": "9875.0 ± 1083.0",
+        "avgThroughput": "101144 ± 0.42%",
+        "medThroughput": "101266 ± 11410",
+        "samples": 9549
+      },
+      {
+        "name": "jsonb hash",
+        "avgLatency": "10994 ± 1.27%",
+        "medLatency": "10125 ± 1333.0",
+        "avgThroughput": "99035 ± 0.51%",
+        "medThroughput": "98765 ± 13380",
+        "samples": 9097
+      }
+    ]
+  },
+  {
+    "date": "2026-02-07T17:13:44.302Z",
+    "results": [
+      {
+        "name": "message to string",
+        "avgLatency": "22.76 ± 0.41%",
+        "medLatency": "41.00 ± 1.00",
+        "avgThroughput": "33659156 ± 0.03%",
+        "medThroughput": "24390244 ± 580721",
+        "samples": 4393281
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "42.67 ± 0.46%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "23264953 ± 0.02%",
+        "medThroughput": "23809524 ± 1",
+        "samples": 2343602
+      },
+      {
+        "name": "init message",
+        "avgLatency": "62.35 ± 0.77%",
+        "medLatency": "42.00 ± 1.00",
+        "avgThroughput": "18920025 ± 0.05%",
+        "medThroughput": "23809523 ± 580720",
+        "samples": 1603911
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "110.60 ± 4.07%",
+        "medLatency": "84.00 ± 1.00",
+        "avgThroughput": "10950231 ± 0.06%",
+        "medThroughput": "11904762 ± 143431",
+        "samples": 904194
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "113.75 ± 0.53%",
+        "medLatency": "125.00 ± 0.00",
+        "avgThroughput": "9468120 ± 0.05%",
+        "medThroughput": "8000000 ± 0",
+        "samples": 879105
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "194.50 ± 0.79%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "6097960 ± 0.07%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 514147
+      },
+      {
+        "name": "json to hash",
+        "avgLatency": "8066.4 ± 1.95%",
+        "medLatency": "7375.0 ± 459.00",
+        "avgThroughput": "130236 ± 0.26%",
+        "medThroughput": "135593 ± 8978",
+        "samples": 12399
+      },
+      {
+        "name": "jsonb hash",
+        "avgLatency": "10534 ± 1.40%",
+        "medLatency": "9792.0 ± 1208.0",
+        "avgThroughput": "102643 ± 0.50%",
+        "medThroughput": "102124 ± 12700",
+        "samples": 9494
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "13749 ± 53.40%",
+        "medLatency": "9209.0 ± 1042.0",
+        "avgThroughput": "105994 ± 0.41%",
+        "medThroughput": "108589 ± 12623",
+        "samples": 7274
+      }
+    ]
+  },
+  {
+    "date": "2026-02-07T17:46:20.510Z",
+    "results": [
+      {
+        "name": "message to string",
+        "avgLatency": "22.50 ± 0.38%",
+        "medLatency": "41.00 ± 1.00",
+        "avgThroughput": "34073190 ± 0.03%",
+        "medThroughput": "24390244 ± 580721",
+        "samples": 4444304
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "45.72 ± 0.44%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "22715933 ± 0.02%",
+        "medThroughput": "23809524 ± 1",
+        "samples": 2187463
+      },
+      {
+        "name": "init message",
+        "avgLatency": "70.59 ± 0.73%",
+        "medLatency": "83.00 ± 1.00",
+        "avgThroughput": "17403267 ± 0.06%",
+        "medThroughput": "12048193 ± 143431",
+        "samples": 1416572
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "100.70 ± 8.92%",
+        "medLatency": "83.00 ± 0.00",
+        "avgThroughput": "11683353 ± 0.05%",
+        "medThroughput": "12048193 ± 0",
+        "samples": 993002
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "119.18 ± 0.34%",
+        "medLatency": "125.00 ± 0.00",
+        "avgThroughput": "9348542 ± 0.05%",
+        "medThroughput": "8000000 ± 0",
+        "samples": 839083
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "204.33 ± 0.71%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "5565498 ± 0.07%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 489399
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "8971.4 ± 10.51%",
+        "medLatency": "8500.0 ± 167.00",
+        "avgThroughput": "119060 ± 0.15%",
+        "medThroughput": "117647 ± 2343",
+        "samples": 11147
+      },
+      {
+        "name": "json to hash",
+        "avgLatency": "10610 ± 1.05%",
+        "medLatency": "9834.0 ± 917.00",
+        "avgThroughput": "98934 ± 0.37%",
+        "medThroughput": "101688 ± 9944",
+        "samples": 9426
+      },
+      {
+        "name": "jsonb hash",
+        "avgLatency": "10820 ± 1.08%",
+        "medLatency": "10208 ± 1167.0",
+        "avgThroughput": "97399 ± 0.42%",
+        "medThroughput": "97962 ± 11629",
+        "samples": 9243
+      }
+    ]
+  },
+  {
+    "date": "2026-02-07T17:50:22.043Z",
+    "results": [
+      {
+        "name": "message to string",
+        "avgLatency": "21.73 ± 0.43%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "35445669 ± 0.03%",
+        "medThroughput": "46025596 ± 0",
+        "samples": 4602560
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "45.20 ± 0.33%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "22844993 ± 0.02%",
+        "medThroughput": "23809524 ± 1",
+        "samples": 2212186
+      },
+      {
+        "name": "init message",
+        "avgLatency": "71.20 ± 0.56%",
+        "medLatency": "83.00 ± 1.00",
+        "avgThroughput": "17054584 ± 0.06%",
+        "medThroughput": "12048193 ± 143431",
+        "samples": 1404558
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "99.58 ± 1.14%",
+        "medLatency": "83.00 ± 0.00",
+        "avgThroughput": "11121176 ± 0.04%",
+        "medThroughput": "12048193 ± 0",
+        "samples": 1004343
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "126.46 ± 0.27%",
+        "medLatency": "125.00 ± 0.00",
+        "avgThroughput": "8522823 ± 0.05%",
+        "medThroughput": "8000000 ± 0",
+        "samples": 790755
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "205.11 ± 0.85%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "5667978 ± 0.07%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 487551
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "8803.4 ± 2.88%",
+        "medLatency": "8584.0 ± 166.00",
+        "avgThroughput": "116335 ± 0.14%",
+        "medThroughput": "116496 ± 2210",
+        "samples": 11360
+      }
+    ]
+  },
+  {
+    "date": "2026-02-07T20:05:06.340Z",
+    "results": [
+      {
+        "name": "message to hex",
+        "avgLatency": "20.89 ± 0.35%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "36545093 ± 0.03%",
+        "medThroughput": "47862938 ± 0",
+        "samples": 4786294
+      },
+      {
+        "name": "message to bs32",
+        "avgLatency": "21.22 ± 0.32%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "35726942 ± 0.03%",
+        "medThroughput": "47136390 ± 0",
+        "samples": 4713640
+      },
+      {
+        "name": "message to string",
+        "avgLatency": "22.77 ± 0.43%",
+        "medLatency": "41.00 ± 1.00",
+        "avgThroughput": "33872831 ± 0.03%",
+        "medThroughput": "24390244 ± 580721",
+        "samples": 4392166
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "52.29 ± 7.72%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "22389162 ± 0.03%",
+        "medThroughput": "23809524 ± 1",
+        "samples": 1912306
+      },
+      {
+        "name": "init message",
+        "avgLatency": "69.85 ± 0.64%",
+        "medLatency": "83.00 ± 41.00",
+        "avgThroughput": "17697663 ± 0.06%",
+        "medThroughput": "12048193 ± 4048193",
+        "samples": 1431727
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "119.63 ± 0.33%",
+        "medLatency": "125.00 ± 0.00",
+        "avgThroughput": "9261416 ± 0.05%",
+        "medThroughput": "8000000 ± 0",
+        "samples": 835928
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "164.28 ± 65.36%",
+        "medLatency": "84.00 ± 1.00",
+        "avgThroughput": "10842510 ± 0.07%",
+        "medThroughput": "11904762 ± 143431",
+        "samples": 608723
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "197.52 ± 0.86%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "5969521 ± 0.07%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 506266
+      },
+      {
+        "name": "message to bs58",
+        "avgLatency": "233.60 ± 0.81%",
+        "medLatency": "208.00 ± 41.00",
+        "avgThroughput": "4709978 ± 0.06%",
+        "medThroughput": "4807692 ± 807692",
+        "samples": 428087
+      },
+      {
+        "name": "message from bs58",
+        "avgLatency": "1880.3 ± 8.50%",
+        "medLatency": "1625.0 ± 125.00",
+        "avgThroughput": "593105 ± 0.13%",
+        "medThroughput": "615385 ± 51282",
+        "samples": 53182
+      },
+      {
+        "name": "message from hex",
+        "avgLatency": "3987.6 ± 83.43%",
+        "medLatency": "1834.0 ± 208.00",
+        "avgThroughput": "533359 ± 0.23%",
+        "medThroughput": "545256 ± 55540",
+        "samples": 25078
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "9781.9 ± 15.65%",
+        "medLatency": "8709.0 ± 125.00",
+        "avgThroughput": "112839 ± 0.18%",
+        "medThroughput": "114824 ± 1672",
+        "samples": 10223
+      },
+      {
+        "name": "message from bs32"
+      }
+    ]
   }
 ]

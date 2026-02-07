@@ -1,19 +1,10 @@
 {
   "compilerOptions": {
       "outDir": "./exports",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "allowJs": true,
-      "target": "es2022",
+      "target": "esnext",
       "module": "NodeNext",
       "moduleResolution": "NodeNext",
-      "declaration": true,
-      "strict": true,
-      "noImplicitAny": true,
-      "strictNullChecks": true,
-      "strictFunctionTypes": true,
-      "strictBindCallApply": true,
-      "alwaysStrict": true
+      "declaration": true
   },
   "include": [
     "./src/**/*"

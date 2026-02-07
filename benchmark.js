@@ -66,7 +66,14 @@ class FormatTest extends FormatInterface {
 }
 
 const jsonString = JSON.stringify({ somedata: 'hello' })
-let message, uint8String
+let message, uint8String, hexString, bs58String, bs32String
+
+const setupMessage = new FormatTest({ somedata: 'hello' })
+uint8String = setupMessage.toString()
+hexString = setupMessage.toHex()
+bs58String = setupMessage.toBs58()
+bs32String = setupMessage.toBs32()
+
 bench
   .add('init message', () => {
     message = new FormatTest({ somedata: 'hello' })
@@ -77,6 +84,24 @@ bench
   .add('message from string', () => {
     message = new FormatTest(uint8String)
   })
+  .add('message to hex', () => {
+    message.toHex()
+  })
+  .add('message from hex', () => {
+    message = new FormatTest(hexString)
+  })
+  .add('message to bs58', () => {
+    message.toBs58()
+  })
+  .add('message from bs58', () => {
+    message = new FormatTest(bs58String)
+  })
+  .add('message to bs32', () => {
+    message.toBs32()
+  })
+  .add('message from bs32', () => {
+    message = new FormatTest(bs32String)
+  })
   .add('hash message', async () => {
     await message.hash()
   })
@@ -86,16 +111,9 @@ bench
   .add('json from string', () => {
     JSON.parse(jsonString)
   })
-  .add('json to hash', async () => {
-    await subtle.digest('SHA-512', new TextEncoder().encode(JSON.stringify({ somedata: 'hello' })))
-  })
+
   .add('jsonb to string', () => {
     new B({ somedata: 'hello' }).encode()
-  })
-  .add('jsonb hash', async () => {
-    const encoded = new B({ somedata: 'hello' }).encode()
-
-    await subtle.digest('SHA-512', encoded)
   })
 
 await bench.run()

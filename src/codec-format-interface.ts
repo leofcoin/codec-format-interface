@@ -103,6 +103,18 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     return `${upper}${this.hashFormat.substring(1, this.hashFormat.length)}`
   }
 
+  /**
+   * Extract content bytes without codec prefix
+   */
+  get contentBytes(): Uint8Array {
+    if (!this.encoded) return new Uint8Array(0)
+    const codec = new Codec(this.encoded)
+    if (codec.codecBuffer) {
+      return this.encoded.slice(codec.codecBuffer.length)
+    }
+    return this.encoded
+  }
+
   beforeHashing(decoded: { [index: string]: any }) {
     // Avoid copying if not needed
     if (decoded && Object.prototype.hasOwnProperty.call(decoded, 'hash')) {
@@ -118,9 +130,23 @@ export default class FormatInterface extends BasicInterface implements FormatInt
    * @return {PeernetHash}
    */
   get peernetHash() {
+    // Optimize: if decoded has no hash property, contentBytes are already correct
+    // Since protoEncode is deterministic (varint-based), we can use them directly
+    if (
+      this.encoded &&
+      this.decoded &&
+      !Object.prototype.hasOwnProperty.call(this.decoded, 'hash')
+    ) {
+      // @ts-ignore
+      const hash = new Hash({ name: this.name })
+      return hash.init(this.contentBytes)
+    }
+
+    // Fallback: must re-encode without hash property
     const decoded = this.beforeHashing({ ...this.decoded })
     // @ts-ignore
-    return new Hash(decoded, { name: this.name })
+    const hash = new Hash({ name: this.name })
+    return hash.init(decoded)
   }
 
   /**

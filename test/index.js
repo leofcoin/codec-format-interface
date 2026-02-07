@@ -1,6 +1,6 @@
 import test from 'tape'
 import { FormatInterface, Codec, CodecHash, codecs } from './../exports/index.js'
-const _hash = 'IHT4DAQGCEP6WX3BPPP5USUKUN5BJMMPGJANIQILS5EXIZ2BQ6TFJMH2PEX'
+const _hash = 'IHT4DAQHLJVV5JLW2JRWXEHUVQAPTHPQTCSJTWNKWQ2XXHWMV3UFQYX3Y7C'
 const bs32hash = 'HT4DAQGBLIMVWGY3YA'
 globalThis.peernet = { codecs: {} }
 
@@ -89,6 +89,76 @@ test('Codec and CodecHash basic usage', (tape) => {
   tape.plan(2)
   const codec = new Codec('peernet-ps')
   tape.ok(codec, 'Codec instance created')
-  const hash = new CodecHash({ somedata: 'hello' }, { name: 'peernet-ps' })
+  const hash = new CodecHash({ name: 'peernet-ps' })
   tape.ok(hash, 'CodecHash instance created')
+})
+
+test('CodecHash can handle large files', async (tape) => {
+  tape.plan(3)
+
+  // Size in bytes: default 100MB, can be set via LARGE_FILE_SIZE env var
+  // For 2GB test: LARGE_FILE_SIZE=2147483648 npm test
+  const size = parseInt(process.env.LARGE_FILE_SIZE || '104857600') // 100MB default
+  const sizeMB = (size / 1024 / 1024).toFixed(2)
+
+  console.log(`\nTesting with ${sizeMB}MB file...`)
+
+  // Create a large buffer filled with test data
+  const largeBuffer = new Uint8Array(size)
+  // Fill with pseudo-random data for more realistic test
+  for (let i = 0; i < size; i += 1024) {
+    const chunk = i % 256
+    largeBuffer.fill(chunk, i, Math.min(i + 1024, size))
+  }
+
+  console.log(`Buffer created: ${sizeMB}MB`)
+
+  const startTime = Date.now()
+  const hash = new CodecHash({ name: 'disco-hash' })
+  await hash.init(largeBuffer)
+  const endTime = Date.now()
+
+  const duration = ((endTime - startTime) / 1000).toFixed(2)
+  console.log(
+    `Hashing took ${duration}s (${(size / (endTime - startTime) / 1024).toFixed(2)} MB/s)`
+  )
+
+  tape.ok(hash.encoded, 'large file encoded successfully')
+  tape.ok(hash.digest, 'large file has digest')
+  tape.equal(hash.size, hash.digest.length, 'digest size is correct')
+})
+
+test('format can handle BigInt values', async (tape) => {
+  tape.plan(5)
+
+  class BigIntFormat extends FormatInterface {
+    constructor(data) {
+      super(
+        data,
+        {
+          id: 'test',
+          amount: 0n,
+          timestamp: 0n
+        },
+        { name: 'peernet-ps' }
+      )
+    }
+  }
+
+  const bigData = {
+    id: 'transaction',
+    amount: 999999999999999999999999999n,
+    timestamp: 1738963200000n
+  }
+
+  const message = new BigIntFormat(bigData)
+  tape.ok(message.encoded, 'can encode with BigInt')
+  tape.equal(message.decoded.amount, bigData.amount, 'BigInt amount preserved')
+  tape.equal(message.decoded.timestamp, bigData.timestamp, 'BigInt timestamp preserved')
+
+  const hash = await message.hash()
+  tape.ok(typeof hash === 'string', 'hash is string')
+
+  const decoded = new BigIntFormat(message.encoded)
+  tape.equal(decoded.decoded.amount, bigData.amount, 'BigInt survives encode/decode cycle')
 })

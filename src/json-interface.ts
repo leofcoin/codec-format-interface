@@ -91,7 +91,8 @@ export default class JsonInterface extends BasicInterface implements JsonInterfa
     const decoded = this.decoded
     // @ts-ignore
     delete decoded.hash
-    return new Hash(decoded, { name: this.name })
+    const hash = new Hash({ name: this.name })
+    return hash.init(new TextEncoder().encode(JSON.stringify(decoded, jsonStringifyBigInt)))
   }
 
   /**

@@ -34,7 +34,6 @@
     "@vandeurenglenn/proto-array": "^1.0.17",
     "@vandeurenglenn/typed-array-utils": "^1.2.0",
     "hash-wasm": "^4.12.0",
-    "multiformats": "^13.3.2",
     "varint": "^6.0.0"
   },
   "devDependencies": {
