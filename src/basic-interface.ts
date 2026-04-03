@@ -3,6 +3,7 @@ import base58 from '@vandeurenglenn/base58'
 import type { base58String } from '@vandeurenglenn/base58'
 import type { base32String } from '@vandeurenglenn/base32'
 import isHex from '@vandeurenglenn/is-hex'
+import type { HexString } from '@vandeurenglenn/is-hex'
 import proto from '@vandeurenglenn/proto-array'
 import {
   fromBase32,
@@ -48,14 +49,14 @@ export const jsonParseBigInt = (key, value) => {
   return value
 }
 
-const _textEncoder = new TextEncoder()
-const _textDecoder = new TextDecoder()
-
 export default class BasicInterface {
   #encoded: Uint8Array
   #decoded: object
   name: string
   #proto: object
+
+  textEncoder = new TextEncoder()
+  textDecoder = new TextDecoder()
 
   get keys() {
     // handles proto keys
@@ -89,11 +90,44 @@ export default class BasicInterface {
     return this.#proto
   }
 
+  from(
+    value:
+      | Uint8Array
+      | ArrayBuffer
+      | HexString
+      | base58String
+      | base32String
+      | string
+      | number[]
+      | object
+  ): this {
+    if (value instanceof Uint8Array) this.fromUint8Array(value)
+    else if (value instanceof ArrayBuffer) this.fromArrayBuffer(value)
+    else if (typeof value === 'string' && isHex(value as HexString)) {
+      this.fromHex(value as HexString)
+    } else if (typeof value === 'string') {
+      const looksBase58 = base58.isBase58(value as base58String)
+      const looksBase32 = base32.isBase32(value as base32String)
+
+      if (looksBase58 && looksBase32) {
+        try {
+          this.fromBs58(value as base58String)
+        } catch {
+          this.fromBs32(value as base32String)
+        }
+      } else if (looksBase58) this.fromBs58(value as base58String)
+      else if (looksBase32) this.fromBs32(value as base32String)
+      else this.fromString(value)
+    } else if (Array.isArray(value)) this.fromArray(value)
+    else if (typeof value === 'object') this.create(value)
+    return this
+  }
+
   decode(encoded?: Uint8Array): Object {
     encoded = encoded || this.encoded
     // Example: decode as JSON if possible (override in subclass)
     try {
-      return JSON.parse(_textDecoder.decode(encoded), jsonParseBigInt)
+      return JSON.parse(this.textDecoder.decode(encoded), jsonParseBigInt)
     } catch {
       return new Object()
     }
@@ -102,9 +136,17 @@ export default class BasicInterface {
   encode(decoded?: object): Uint8Array {
     decoded = decoded || this.decoded
     // Example: encode as JSON (override in subclass)
-    return _textEncoder.encode(JSON.stringify(decoded, jsonStringifyBigInt))
+    return this.textEncoder.encode(JSON.stringify(decoded, jsonStringifyBigInt))
   }
   // get Codec(): Codec {}
+
+  create(options: object) {
+    for (const key of this.keys) {
+      if (options[key]) {
+        this[key] = options[key]
+      }
+    }
+  }
 
   // Cache proto keys/values for reuse
   static _protoCache = new WeakMap<object, { keys: string[]; values: any[] }>()
@@ -179,8 +221,22 @@ export default class BasicInterface {
     return this.decode(Uint8Array.from(array))
   }
 
-  fromEncoded(encoded: Uint8Array) {
-    return this.decode(encoded)
+  fromArrayBuffer(uint8Array: ArrayBuffer): Uint8Array {
+    return fromArrayLike(new Uint8Array(uint8Array))
+  }
+
+  fromUint8Array(uint8Array: Uint8Array): Uint8Array {
+    return fromArrayLike(uint8Array)
+  }
+
+  toUint8Array(format: 'bs32' | 'bs58' | 'hex' | 'utf8' | 'uint8Array' | 'uint8ArrayString') {
+    if (format === 'bs32') return toBase32(this.encoded)
+    if (format === 'bs58') return toBase58(this.encoded)
+    if (format === 'hex') return toHex(this.encoded)
+    if (format === 'utf8') return this.encoded.toString()
+    if (format === 'uint8Array') return this.encoded
+    if (format === 'uint8ArrayString') return this.encoded.toString()
+    throw new Error(`Unknown format: ${format}`)
   }
 
   toString(): string {

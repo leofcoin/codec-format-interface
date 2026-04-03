@@ -4,6 +4,9 @@ const _hash = 'IHT4DAQHLJVV5JLW2JRWXEHUVQAPTHPQTCSJTWNKWQ2XXHWMV3UFQYX3Y7C'
 const bs32hash = 'HT4DAQGBLIMVWGY3YA'
 globalThis.peernet = { codecs: {} }
 
+const toArray = (value) => Array.from(value)
+const toUint8Array = (value) => (value instanceof Uint8Array ? value : Uint8Array.from(value))
+
 class FormatTest extends FormatInterface {
   get messageName() {
     return 'Message'
@@ -27,6 +30,44 @@ test('format encode/decode', async (tape) => {
   const m2 = new FormatTest(message.toBs58())
   tape.ok(message.encoded, 'can encode')
   tape.equal(m2.decoded.somedata, 'hello', 'can decode')
+})
+
+test('format round-trip keeps encoded bytes stable', (tape) => {
+  tape.plan(6)
+
+  const source = new FormatTest({ somedata: 'hello', hash: _hash })
+  const sourceBytes = toArray(source.encoded)
+
+  const fromUint8 = new FormatTest(source.encoded)
+  tape.deepEqual(toArray(fromUint8.encoded), sourceBytes, 'Uint8Array input keeps identical bytes')
+
+  const fromArrayBuffer = new FormatTest(source.encoded.buffer.slice(0))
+  tape.deepEqual(
+    toArray(fromArrayBuffer.encoded),
+    sourceBytes,
+    'ArrayBuffer input keeps identical bytes'
+  )
+
+  const canonical = new FormatTest(source.encoded)
+  tape.equal(canonical.toBs58(), source.toBs58(), 'base58 output is stable after round-trip')
+  tape.equal(canonical.toBs32(), source.toBs32(), 'base32 output is stable after round-trip')
+  tape.equal(canonical.toHex(), source.toHex(), 'hex output is stable after round-trip')
+  tape.equal(canonical.toString(), source.toString(), 'CSV output is stable after round-trip')
+})
+
+test('codec round-trip keeps encoded bytes and name', (tape) => {
+  tape.plan(2)
+
+  const fromName = new Codec('peernet-ps')
+  const encoded = toUint8Array(fromName.encode())
+  const fromCodecNumber = new Codec(fromName.codec)
+
+  tape.equal(fromCodecNumber.codec, fromName.codec, 'codec number is preserved')
+  tape.deepEqual(
+    toArray(toUint8Array(fromCodecNumber.encode())),
+    toArray(encoded),
+    'encoded bytes are preserved'
+  )
 })
 
 test('format can hash', async (tape) => {
