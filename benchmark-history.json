@@ -806,5 +806,114 @@
         "name": "message from bs32"
       }
     ]
+  },
+  {
+    "date": "2026-04-03T17:46:12.713Z",
+    "results": [
+      {
+        "name": "message to string",
+        "avgLatency": "20.44 ± 0.11%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "36869800 ± 0.01%",
+        "medThroughput": "48922075 ± 0",
+        "samples": 24461039
+      },
+      {
+        "name": "message to hex",
+        "avgLatency": "20.74 ± 0.22%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "36498174 ± 0.01%",
+        "medThroughput": "48220694 ± 0",
+        "samples": 24110348
+      },
+      {
+        "name": "message to bs32",
+        "avgLatency": "20.77 ± 0.17%",
+        "medLatency": "0.00 ± 0.00",
+        "avgThroughput": "36395142 ± 0.01%",
+        "medThroughput": "48152276 ± 0",
+        "samples": 24076139
+      },
+      {
+        "name": "json to string",
+        "avgLatency": "41.68 ± 0.27%",
+        "medLatency": "42.00 ± 0.00",
+        "avgThroughput": "23506847 ± 0.01%",
+        "medThroughput": "23809524 ± 0",
+        "samples": 11995495
+      },
+      {
+        "name": "init message",
+        "avgLatency": "84.88 ± 0.44%",
+        "medLatency": "83.00 ± 0.00",
+        "avgThroughput": "13237326 ± 0.03%",
+        "medThroughput": "12048193 ± 0",
+        "samples": 5890712
+      },
+      {
+        "name": "hash message",
+        "avgLatency": "94.01 ± 6.31%",
+        "medLatency": "83.00 ± 0.00",
+        "avgThroughput": "12898344 ± 0.03%",
+        "medThroughput": "12048192 ± 1",
+        "samples": 5318482
+      },
+      {
+        "name": "json from string",
+        "avgLatency": "114.74 ± 3.23%",
+        "medLatency": "84.00 ± 1.00",
+        "avgThroughput": "9946451 ± 0.02%",
+        "medThroughput": "11904761 ± 143432",
+        "samples": 4357753
+      },
+      {
+        "name": "jsonb to string",
+        "avgLatency": "185.88 ± 5.18%",
+        "medLatency": "167.00 ± 41.00",
+        "avgThroughput": "6296601 ± 0.03%",
+        "medThroughput": "5988024 ± 1180332",
+        "samples": 2689896
+      },
+      {
+        "name": "message to bs58",
+        "avgLatency": "196.26 ± 0.39%",
+        "medLatency": "167.00 ± 1.00",
+        "avgThroughput": "5440053 ± 0.02%",
+        "medThroughput": "5988024 ± 36073",
+        "samples": 2547641
+      },
+      {
+        "name": "message from hex",
+        "avgLatency": "1936.4 ± 18.52%",
+        "medLatency": "1458.0 ± 83.00",
+        "avgThroughput": "668601 ± 0.05%",
+        "medThroughput": "685871 ± 41402",
+        "samples": 258216
+      },
+      {
+        "name": "message from bs58",
+        "avgLatency": "5195.6 ± 9.08%",
+        "medLatency": "4416.0 ± 166.00",
+        "avgThroughput": "220741 ± 0.07%",
+        "medThroughput": "226449 ± 8845",
+        "samples": 96236
+      },
+      {
+        "name": "message from bs32",
+        "avgLatency": "7130.1 ± 23.54%",
+        "medLatency": "5334.0 ± 167.00",
+        "avgThroughput": "180638 ± 0.08%",
+        "medThroughput": "187477 ± 6059",
+        "samples": 70126
+      },
+      {
+        "name": "message from string",
+        "avgLatency": "10283 ± 26.82%",
+        "medLatency": "7459.0 ± 167.00",
+        "avgThroughput": "128845 ± 0.11%",
+        "medThroughput": "134066 ± 3070",
+        "samples": 48623
+      }
+    ]
   }
 ]

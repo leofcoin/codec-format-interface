@@ -106,17 +106,14 @@ export default class BasicInterface {
     else if (typeof value === 'string' && isHex(value as HexString)) {
       this.fromHex(value as HexString)
     } else if (typeof value === 'string') {
-      const looksBase58 = base58.isBase58(value as base58String)
-      const looksBase32 = base32.isBase32(value as base32String)
-
-      if (looksBase58 && looksBase32) {
+      if (base58.isBase58(value as base58String)) {
         try {
           this.fromBs58(value as base58String)
         } catch {
-          this.fromBs32(value as base32String)
+          if (base32.isBase32(value as base32String)) this.fromBs32(value as base32String)
+          else throw new Error('Invalid base58/base32 input')
         }
-      } else if (looksBase58) this.fromBs58(value as base58String)
-      else if (looksBase32) this.fromBs32(value as base32String)
+      } else if (base32.isBase32(value as base32String)) this.fromBs32(value as base32String)
       else this.fromString(value)
     } else if (Array.isArray(value)) this.fromArray(value)
     else if (typeof value === 'object') this.create(value)

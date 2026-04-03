@@ -1,7 +1,7 @@
-import test from 'tape'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { FormatInterface, Codec, CodecHash, codecs } from './../exports/index.js'
 const _hash = 'IHT4DAQHLJVV5JLW2JRWXEHUVQAPTHPQTCSJTWNKWQ2XXHWMV3UFQYX3Y7C'
-const bs32hash = 'HT4DAQGBLIMVWGY3YA'
 globalThis.peernet = { codecs: {} }
 
 const toArray = (value) => Array.from(value)
@@ -22,81 +22,74 @@ class FormatTest extends FormatInterface {
   }
 }
 
-const encoded = [48, 10, 5, 104, 101, 108, 108, 111]
-
-test('format encode/decode', async (tape) => {
-  tape.plan(2)
+test('format encode/decode', async () => {
   const message = new FormatTest({ somedata: 'hello', hash: _hash })
   const m2 = new FormatTest(message.toBs58())
-  tape.ok(message.encoded, 'can encode')
-  tape.equal(m2.decoded.somedata, 'hello', 'can decode')
+  assert.ok(message.encoded, 'can encode')
+  assert.equal(m2.decoded.somedata, 'hello', 'can decode')
 })
 
-test('format round-trip keeps encoded bytes stable', (tape) => {
-  tape.plan(6)
-
+test('format round-trip keeps encoded bytes stable', () => {
   const source = new FormatTest({ somedata: 'hello', hash: _hash })
   const sourceBytes = toArray(source.encoded)
 
   const fromUint8 = new FormatTest(source.encoded)
-  tape.deepEqual(toArray(fromUint8.encoded), sourceBytes, 'Uint8Array input keeps identical bytes')
+  assert.deepEqual(
+    toArray(fromUint8.encoded),
+    sourceBytes,
+    'Uint8Array input keeps identical bytes'
+  )
 
   const fromArrayBuffer = new FormatTest(source.encoded.buffer.slice(0))
-  tape.deepEqual(
+  assert.deepEqual(
     toArray(fromArrayBuffer.encoded),
     sourceBytes,
     'ArrayBuffer input keeps identical bytes'
   )
 
   const canonical = new FormatTest(source.encoded)
-  tape.equal(canonical.toBs58(), source.toBs58(), 'base58 output is stable after round-trip')
-  tape.equal(canonical.toBs32(), source.toBs32(), 'base32 output is stable after round-trip')
-  tape.equal(canonical.toHex(), source.toHex(), 'hex output is stable after round-trip')
-  tape.equal(canonical.toString(), source.toString(), 'CSV output is stable after round-trip')
+  assert.equal(canonical.toBs58(), source.toBs58(), 'base58 output is stable after round-trip')
+  assert.equal(canonical.toBs32(), source.toBs32(), 'base32 output is stable after round-trip')
+  assert.equal(canonical.toHex(), source.toHex(), 'hex output is stable after round-trip')
+  assert.equal(canonical.toString(), source.toString(), 'CSV output is stable after round-trip')
 })
 
-test('codec round-trip keeps encoded bytes and name', (tape) => {
-  tape.plan(2)
-
+test('codec round-trip keeps encoded bytes and name', () => {
   const fromName = new Codec('peernet-ps')
   const encoded = toUint8Array(fromName.encode())
   const fromCodecNumber = new Codec(fromName.codec)
 
-  tape.equal(fromCodecNumber.codec, fromName.codec, 'codec number is preserved')
-  tape.deepEqual(
+  assert.equal(fromCodecNumber.codec, fromName.codec, 'codec number is preserved')
+  assert.deepEqual(
     toArray(toUint8Array(fromCodecNumber.encode())),
     toArray(encoded),
     'encoded bytes are preserved'
   )
 })
 
-test('format can hash', async (tape) => {
-  tape.plan(2)
+test('format can hash', async () => {
   const message = new FormatTest({ somedata: 'hello' })
   const hash = await message.hash()
-  tape.ok(hash === _hash, 'can hash')
-  tape.ok(typeof hash === 'string', 'hash is string')
+  assert.equal(hash, _hash, 'can hash')
+  assert.equal(typeof hash, 'string', 'hash is string')
 })
 
-test('format fromUint8Array and fromArrayBuffer', (tape) => {
-  tape.plan(2)
+test('format fromUint8Array and fromArrayBuffer', () => {
   const arr = new Uint8Array([48, 10, 5, 104, 101, 108, 108, 111])
   const msg1 = new FormatTest(arr)
-  tape.ok(msg1.encoded, 'fromUint8Array works')
+  assert.ok(msg1.encoded, 'fromUint8Array works')
   const buf = arr.buffer
   const msg2 = new FormatTest(buf)
-  tape.ok(msg2.encoded, 'fromArrayBuffer works')
+  assert.ok(msg2.encoded, 'fromArrayBuffer works')
 })
 
-test('format create edge cases', (tape) => {
-  tape.plan(1)
+test('format create edge cases', () => {
   const msg = new FormatTest({ somedata: 'hello', hash: _hash })
   msg.create({ somedata: 'world', hash: _hash })
-  tape.equal(msg.decoded.somedata, 'world', 'create updates decoded')
+  assert.equal(msg.decoded.somedata, 'world', 'create updates decoded')
 })
 
-test('format error on invalid codec', (tape) => {
-  tape.plan(1)
+test('format error on invalid codec', () => {
   class BadFormat extends FormatInterface {
     get name() {
       return 'bad'
@@ -110,33 +103,21 @@ test('format error on invalid codec', (tape) => {
   }
   const bad = new BadFormat({ foo: 'bar' })
   bad.name = 'invalid'
-  tape.throws(() => bad.encode({ foo: 'bar' }), 'throws on invalid codec')
+  assert.throws(() => bad.encode({ foo: 'bar' }), undefined, 'throws on invalid codec')
 })
 
-test('format can hash', async (tape) => {
-  tape.plan(1)
-  const message = new FormatTest({ somedata: 'hello' })
-  const hash = await message.hash()
-  console.log(hash)
-  tape.ok(hash === _hash, 'can hash')
+test('has codecs', async () => {
+  assert.ok(Object.keys(codecs).length !== 0, 'codecs are present')
 })
 
-test('has codecs', async (tape) => {
-  tape.plan(1)
-  tape.ok(Object.keys(codecs).length !== 0, 'codecs are present')
-})
-
-test('Codec and CodecHash basic usage', (tape) => {
-  tape.plan(2)
+test('Codec and CodecHash basic usage', () => {
   const codec = new Codec('peernet-ps')
-  tape.ok(codec, 'Codec instance created')
+  assert.ok(codec, 'Codec instance created')
   const hash = new CodecHash({ name: 'peernet-ps' })
-  tape.ok(hash, 'CodecHash instance created')
+  assert.ok(hash, 'CodecHash instance created')
 })
 
-test('CodecHash can handle large files', async (tape) => {
-  tape.plan(3)
-
+test('CodecHash can handle large files', async () => {
   // Size in bytes: default 100MB, can be set via LARGE_FILE_SIZE env var
   // For 2GB test: LARGE_FILE_SIZE=2147483648 npm test
   const size = parseInt(process.env.LARGE_FILE_SIZE || '104857600') // 100MB default
@@ -164,14 +145,12 @@ test('CodecHash can handle large files', async (tape) => {
     `Hashing took ${duration}s (${(size / (endTime - startTime) / 1024).toFixed(2)} MB/s)`
   )
 
-  tape.ok(hash.encoded, 'large file encoded successfully')
-  tape.ok(hash.digest, 'large file has digest')
-  tape.equal(hash.size, hash.digest.length, 'digest size is correct')
+  assert.ok(hash.encoded, 'large file encoded successfully')
+  assert.ok(hash.digest, 'large file has digest')
+  assert.equal(hash.size, hash.digest.length, 'digest size is correct')
 })
 
-test('format can handle BigInt values', async (tape) => {
-  tape.plan(5)
-
+test('format can handle BigInt values', async () => {
   class BigIntFormat extends FormatInterface {
     constructor(data) {
       super(
@@ -193,13 +172,13 @@ test('format can handle BigInt values', async (tape) => {
   }
 
   const message = new BigIntFormat(bigData)
-  tape.ok(message.encoded, 'can encode with BigInt')
-  tape.equal(message.decoded.amount, bigData.amount, 'BigInt amount preserved')
-  tape.equal(message.decoded.timestamp, bigData.timestamp, 'BigInt timestamp preserved')
+  assert.ok(message.encoded, 'can encode with BigInt')
+  assert.equal(message.decoded.amount, bigData.amount, 'BigInt amount preserved')
+  assert.equal(message.decoded.timestamp, bigData.timestamp, 'BigInt timestamp preserved')
 
   const hash = await message.hash()
-  tape.ok(typeof hash === 'string', 'hash is string')
+  assert.equal(typeof hash, 'string', 'hash is string')
 
   const decoded = new BigIntFormat(message.encoded)
-  tape.equal(decoded.decoded.amount, bigData.amount, 'BigInt survives encode/decode cycle')
+  assert.equal(decoded.decoded.amount, bigData.amount, 'BigInt survives encode/decode cycle')
 })

@@ -12,7 +12,7 @@
   "typings": "exports/index.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "test": "node test"
+    "test": "node --test test/index.js"
   },
   "repository": {
     "type": "git",
@@ -39,9 +39,7 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/varint": "^6.0.3",
-    "prettier": "^3.8.1",
     "rollup": "^4.60.1",
-    "tape": "^5.9.0",
     "tinybench": "^6.0.0",
     "tslib": "^2.8.1"
   }
