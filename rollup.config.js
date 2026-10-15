@@ -9,6 +9,7 @@ export default [
       'src/codec.ts',
       'src/codec-hash.ts'
     ],
+    external: (id) => !id.startsWith('.') && !id.startsWith('/') && !id.startsWith('src/'),
     output: [
       {
         dir: 'exports',

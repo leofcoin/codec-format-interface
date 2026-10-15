@@ -1,4 +1,5 @@
-import varint from 'varint'
+import { BinaryReader, BinaryWriter, varUintLength } from '@leofcoin/binary'
+import { utils as codecUtils } from '@leofcoin/codecs'
 import { createSHA1, createSHA224, createSHA256, createSHA384, createSHA512 } from 'hash-wasm'
 import BasicInterface from './basic-interface.js'
 import Codec from './codec.js'
@@ -57,10 +58,18 @@ export default class CodecHash extends BasicInterface {
       // For large buffers, only check first bytes for codec prefix
       // Codec prefixes are small (varint encoded), so 100 bytes is more than enough
       const checkBuffer = uint8Array.length > 100 ? uint8Array.subarray(0, 100) : uint8Array
-      this.discoCodec = new Codec(checkBuffer)
-      const name = this.discoCodec.name
+      // Probe only the numeric prefix. Raw payloads need not be textual codec IDs.
+      let name: string | undefined
+      try {
+        name = codecUtils.getCodecName(new BinaryReader(checkBuffer).readVarUint(false))
+      } catch (error) {
+        // A raw payload may start with arbitrary bytes, not a valid integer header.
+        // Decoding a recognized hash below still fails closed on malformed fields.
+        if (!(error instanceof RangeError)) throw error
+      }
 
       if (name) {
+        this.discoCodec = new Codec(name)
         this.name = name
         this.decode(uint8Array)
       } else {
@@ -79,7 +88,7 @@ export default class CodecHash extends BasicInterface {
   }
 
   get length() {
-    return varint.encode(this.size)
+    return new BinaryWriter(varUintLength(this.size)).writeVarUint(this.size).finish()
   }
 
   get buffer() {
@@ -120,7 +129,7 @@ export default class CodecHash extends BasicInterface {
     if (!(buffer instanceof Uint8Array)) {
       throw new Error('CodecHash only supports Uint8Array input')
     }
-    const codec = varint.decode(buffer)
+    const codec = new BinaryReader(buffer).readVarUint(false)
     if (this.codecs[codec]) {
       this.decode(buffer)
     } else {
@@ -130,13 +139,13 @@ export default class CodecHash extends BasicInterface {
 
   decode(buffer) {
     this.encoded = buffer
-    const codec = varint.decode(buffer)
+    const reader = new BinaryReader(buffer)
+    const codec = reader.readVarUint(false)
 
-    this.discoCodec = new Codec(codec, this.codecs)
+    this.discoCodec = new Codec(codec)
     // TODO: validate codec
-    buffer = buffer.slice(varint.decode.bytes)
-    this.size = varint.decode(buffer)
-    this.digest = buffer.slice(varint.decode.bytes)
+    this.size = reader.readVarUint(false)
+    this.digest = buffer.slice(reader.position)
     if (this.digest.length !== this.size) {
       throw new Error(`hash length inconsistent: 0x${this.encoded.toString()}`)
     }
