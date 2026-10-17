@@ -48,6 +48,21 @@ export default {
 }
 ```
 
+## Hash header compatibility
+
+`CodecHash` continues to encode **length, codec, digest**, byte-for-byte compatible
+with existing hashes. Its decoder also accepts the legacy **codec, length, digest**
+layout. It requires a registered codec and an exact digest-length match before
+updating the instance; unknown codecs, truncated headers and trailing bytes are
+rejected. Legacy padded integer prefixes remain readable. Decoding preserves the
+original bytes, including header order and padding, rather than rewriting hashes.
+
+Use `await hash.encode(rawBytes)` for raw content and `hash.decode(encodedHash)`
+for strict parsing of serialized hashes. `init()` and `validate()` retain automatic
+raw/hash detection for compatibility, so they should not replace `decode()` when
+validating untrusted serialized hashes. Raw bytes can resemble a hash header;
+`FormatInterface` hashes its content through the explicit raw-content path.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

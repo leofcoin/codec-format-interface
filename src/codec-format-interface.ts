@@ -135,14 +135,15 @@ export default class FormatInterface extends BasicInterface implements FormatInt
     ) {
       // @ts-ignore
       const hash = new Hash({ name: this.name })
-      return hash.init(this.contentBytes)
+      // These are explicitly raw message bytes, even if they resemble a hash header.
+      return hash.encode(this.contentBytes).then(() => hash)
     }
 
     // Fallback: must re-encode without hash property
     const decoded = this.beforeHashing({ ...this.decoded })
     // @ts-ignore
     const hash = new Hash({ name: this.name })
-    return hash.init(decoded)
+    return hash.encode(this.protoEncode(decoded)).then(() => hash)
   }
 
   /**
