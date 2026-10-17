@@ -75,12 +75,15 @@ test('format can hash', async () => {
 })
 
 test('format fromUint8Array and fromArrayBuffer', () => {
-  const arr = new Uint8Array([48, 10, 5, 104, 101, 108, 108, 111])
+  const arr = new FormatTest({ somedata: 'hello' }).encoded
   const msg1 = new FormatTest(arr)
   assert.ok(msg1.encoded, 'fromUint8Array works')
   const buf = arr.buffer
   const msg2 = new FormatTest(buf)
   assert.ok(msg2.encoded, 'fromArrayBuffer works')
+  assert.equal(msg1.decoded.somedata, 'hello')
+  assert.equal(msg2.decoded.somedata, 'hello')
+  assert.throws(() => new FormatTest(new Uint8Array([48, 10, 5, 104, 101, 108, 108, 111])), /Truncated/)
 })
 
 test('format create edge cases', () => {

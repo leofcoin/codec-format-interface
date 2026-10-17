@@ -1,4 +1,4 @@
-import varint from 'varint'
+import { BinaryReader, BinaryWriter, varUintLength } from '@leofcoin/binary'
 import { utils as codecUtils } from '@leofcoin/codecs'
 import BasicInterface from './basic-interface.js'
 
@@ -11,7 +11,7 @@ export default class Codec extends BasicInterface {
     super()
     if (buffer) {
       if (buffer instanceof Uint8Array) {
-        const codec = varint.decode(buffer)
+        const codec = new BinaryReader(buffer).readVarUint(false)
         const name = this.getCodecName(codec)
         if (name) {
           this.name = name
@@ -21,11 +21,12 @@ export default class Codec extends BasicInterface {
           this.encode(Number(new TextDecoder().decode(buffer)))
         }
       } else if (buffer instanceof ArrayBuffer) {
-        const codec = varint.decode(buffer)
+        const view = new Uint8Array(buffer)
+        const codec = new BinaryReader(view).readVarUint(false)
         const name = this.getCodecName(codec)
         if (name) {
           this.name = name
-          this.decode(buffer as Uint8Array)
+          this.decode(view)
         } else {
           this.encode(Number(new TextDecoder().decode(new Uint8Array(buffer))))
         }
@@ -42,7 +43,7 @@ export default class Codec extends BasicInterface {
   }
 
   fromEncoded(encoded: Uint8Array): object {
-    const codec = varint.decode(encoded)
+    const codec = new BinaryReader(encoded).readVarUint(false)
     const name = this.getCodecName(codec)
     this.name = name
     this.encoded = encoded
@@ -65,7 +66,7 @@ export default class Codec extends BasicInterface {
     this.name = this.getCodecName(codec)
     this.hashAlg = this.getHashAlg(this.name)
     this.codec = this.getCodec(this.name)
-    this.codecBuffer = varint.encode(this.codec)
+    this.codecBuffer = new BinaryWriter(varUintLength(this.codec)).writeVarUint(this.codec).finish()
     this.decoded = {
       name: this.name,
       hashAlg: this.hashAlg,
@@ -79,7 +80,7 @@ export default class Codec extends BasicInterface {
     this.name = name
     this.codec = codec
     this.hashAlg = this.getHashAlg(name)
-    this.codecBuffer = varint.encode(this.codec)
+    this.codecBuffer = new BinaryWriter(varUintLength(this.codec)).writeVarUint(this.codec).finish()
     this.decoded = {
       name: this.name,
       hashAlg: this.hashAlg,
@@ -90,14 +91,14 @@ export default class Codec extends BasicInterface {
 
   decode(encoded?: Uint8Array): object {
     encoded = encoded || this.encoded
-    const codec = varint.decode(encoded)
+    const codec = new BinaryReader(encoded).readVarUint(false)
     this.fromCodec(codec)
     return this.decoded
   }
 
   encode(codec?: number): Uint8Array {
     codec = codec || this.codec
-    this.encoded = varint.encode(codec)
+    this.encoded = new BinaryWriter(varUintLength(codec)).writeVarUint(codec).finish()
     return this.encoded
   }
 }

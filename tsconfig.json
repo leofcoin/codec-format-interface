@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
       "outDir": "./exports",
+      "rootDir": "./src",
+      "strict": false,
       "target": "esnext",
       "module": "NodeNext",
       "moduleResolution": "NodeNext",
