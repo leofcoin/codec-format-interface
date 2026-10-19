@@ -48,6 +48,33 @@ export default {
 }
 ```
 
+## Canonical hash header (breaking change in 2.0)
+
+`CodecHash` exclusively encodes and decodes this layout:
+
+```text
+[codec: canonical unsigned varint][digest byte length: canonical unsigned varint][digest]
+```
+
+The length counts only the digest bytes, not the codec or header. The decoder
+requires a registered codec and an exact digest-length match before updating the
+instance. Unknown codecs, padded/non-minimal varints, truncated headers, missing
+digest bytes and trailing bytes are rejected. There is no length-first fallback.
+Hash algorithms and digest bytes are unchanged, but serialized hashes and their
+Base32/Base58 representations change from the 1.x length-first format.
+
+This is a coordinated protocol migration, not a drop-in dependency update.
+Consumers must explicitly adopt 2.x together. Content-addressed contracts, blocks,
+transactions and genesis references must be regenerated consistently; existing
+chainstate must not be mixed with the new format. Back up old state and retain
+owner identities before a network reset. This package does not reset any state.
+
+Use `await hash.encode(rawBytes)` for raw content and `hash.decode(encodedHash)`
+for strict parsing of serialized hashes. `init()` and `validate()` retain automatic
+raw/hash detection for compatibility, so they should not replace `decode()` when
+validating untrusted serialized hashes. Raw bytes can resemble a hash header;
+`FormatInterface` hashes its content through the explicit raw-content path.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

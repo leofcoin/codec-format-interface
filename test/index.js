@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { FormatInterface, Codec, CodecHash, codecs } from './../exports/index.js'
-const _hash = 'IHT4DAQHLJVV5JLW2JRWXEHUVQAPTHPQTCSJTWNKWQ2XXHWMV3UFQYX3Y7C'
+const _hash = 'B47AYEBSBLJVV5JLW2JRWXEHUVQAPTHPQTCSJTWNKWQ2XXHWMV3UFQYX3Y7C'
 globalThis.peernet = { codecs: {} }
 
 const toArray = (value) => Array.from(value)

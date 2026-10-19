@@ -38,16 +38,40 @@ type CodecHashOptions = {
   codecs?: object
 }
 
+const hashHeader = (buffer: Uint8Array) => {
+  if (!(buffer instanceof Uint8Array)) throw new TypeError('CodecHash only supports Uint8Array input')
+  const reader = new BinaryReader(buffer)
+  const codec = reader.readVarUint()
+  const name = codecUtils.getCodecName(codec)
+  if (!name) throw new Error('unknown hash codec')
+  const size = reader.readVarUint()
+  if (size !== reader.remaining) throw new Error('hash length inconsistent')
+  return { name, size, offset: reader.position }
+}
+
+const hasHashHeader = (buffer: Uint8Array) => {
+  const reader = new BinaryReader(buffer)
+  try {
+    // Recognition is deliberately separate from strict parsing: a padded known
+    // codec must reach decode() and fail, not silently become raw content.
+    return Boolean(codecUtils.getCodecName(reader.readVarUint(false)))
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error
+    return false
+  }
+}
+
 export default class CodecHash extends BasicInterface {
   codec: Uint8Array
   discoCodec: Codec
   size: number
+  digest: Uint8Array
   codecs: object
   constructor(options: CodecHashOptions = { name: 'disco-hash', codecs: {} }) {
     super()
     if (options?.name) this.name = options.name
     else this.name = 'disco-hash'
-    if (options?.codecs) this.codecs = options.codecs
+    this.codecs = options?.codecs ?? {}
   }
 
   async init(uint8Array: Uint8Array) {
@@ -55,22 +79,7 @@ export default class CodecHash extends BasicInterface {
       if (!(uint8Array instanceof Uint8Array)) {
         throw new Error('CodecHash only supports Uint8Array input')
       }
-      // For large buffers, only check first bytes for codec prefix
-      // Codec prefixes are small (varint encoded), so 100 bytes is more than enough
-      const checkBuffer = uint8Array.length > 100 ? uint8Array.subarray(0, 100) : uint8Array
-      // Probe only the numeric prefix. Raw payloads need not be textual codec IDs.
-      let name: string | undefined
-      try {
-        name = codecUtils.getCodecName(new BinaryReader(checkBuffer).readVarUint(false))
-      } catch (error) {
-        // A raw payload may start with arbitrary bytes, not a valid integer header.
-        // Decoding a recognized hash below still fails closed on malformed fields.
-        if (!(error instanceof RangeError)) throw error
-      }
-
-      if (name) {
-        this.discoCodec = new Codec(name)
-        this.name = name
+      if (hasHashHeader(uint8Array)) {
         this.decode(uint8Array)
       } else {
         await this.encode(uint8Array)
@@ -78,11 +87,15 @@ export default class CodecHash extends BasicInterface {
     }
     return this
   }
+
+  #clearEncodingCache() {
+    for (const key of ['_bs32', '_hex', '_string']) delete this[key]
+  }
   get prefix() {
     const length = this.length
     const uint8Array = new Uint8Array(length.length + this.discoCodec.codecBuffer.length)
-    uint8Array.set(length)
-    uint8Array.set(this.discoCodec.codecBuffer, length.length)
+    uint8Array.set(this.discoCodec.codecBuffer)
+    uint8Array.set(length, this.discoCodec.codecBuffer.length)
 
     return uint8Array
   }
@@ -120,6 +133,8 @@ export default class CodecHash extends BasicInterface {
     uint8Array.set(this.prefix)
     uint8Array.set(this.digest, this.prefix.length)
 
+    this.#clearEncodingCache()
+    this.decoded = undefined
     this.encoded = uint8Array
 
     return this.encoded
@@ -129,39 +144,30 @@ export default class CodecHash extends BasicInterface {
     if (!(buffer instanceof Uint8Array)) {
       throw new Error('CodecHash only supports Uint8Array input')
     }
-    const codec = new BinaryReader(buffer).readVarUint(false)
-    if (this.codecs[codec]) {
-      this.decode(buffer)
-    } else {
-      await this.encode(buffer)
-    }
+    await this.init(buffer)
   }
 
-  decode(buffer) {
+  decode(buffer?: Uint8Array) {
+    buffer = buffer ?? this.encoded
+    // Validate completely before changing this instance, including cached encodings.
+    const header = hashHeader(buffer)
+    const codec = new Codec(header.name)
+    const digest = new Uint8Array(buffer.subarray(header.offset))
+    this.#clearEncodingCache()
     this.encoded = buffer
-    const reader = new BinaryReader(buffer)
-    const codec = reader.readVarUint(false)
-
-    this.discoCodec = new Codec(codec)
-    // TODO: validate codec
-    this.size = reader.readVarUint(false)
-    this.digest = buffer.slice(reader.position)
-    if (this.digest.length !== this.size) {
-      throw new Error(`hash length inconsistent: 0x${this.encoded.toString()}`)
-    }
-
-    // const discoCodec = new Codec(codec, this.codecs)
-
-    this.name = this.discoCodec.name
-
-    this.size = this.digest.length
-
-    return {
+    this.discoCodec = codec
+    this.codec = codec.codecBuffer
+    this.name = header.name
+    this.size = header.size
+    this.digest = digest
+    const decoded = {
       codec: this.codec,
       name: this.name,
       size: this.size,
       length: this.length,
       digest: this.digest
     }
+    this.decoded = decoded
+    return decoded
   }
 }
