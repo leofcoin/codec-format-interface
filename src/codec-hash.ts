@@ -41,24 +41,19 @@ type CodecHashOptions = {
 const hashHeader = (buffer: Uint8Array) => {
   if (!(buffer instanceof Uint8Array)) throw new TypeError('CodecHash only supports Uint8Array input')
   const reader = new BinaryReader(buffer)
-  const first = reader.readVarUint(false)
-  const second = reader.readVarUint(false)
-  const lengthFirstName = codecUtils.getCodecName(second)
-  const codecFirstName = codecUtils.getCodecName(first)
-  // Both headers have the same cursor. If both layouts match, first === second,
-  // so their codec, size and digest are identical; there is no ambiguous state.
-  if (lengthFirstName && first === reader.remaining)
-    return { name: lengthFirstName, size: first, offset: reader.position }
-  if (codecFirstName && second === reader.remaining)
-    return { name: codecFirstName, size: second, offset: reader.position }
-  if (!lengthFirstName && !codecFirstName) throw new Error('unknown hash codec')
-  throw new Error('hash length inconsistent')
+  const codec = reader.readVarUint()
+  const name = codecUtils.getCodecName(codec)
+  if (!name) throw new Error('unknown hash codec')
+  const size = reader.readVarUint()
+  if (size !== reader.remaining) throw new Error('hash length inconsistent')
+  return { name, size, offset: reader.position }
 }
 
 const hasHashHeader = (buffer: Uint8Array) => {
   const reader = new BinaryReader(buffer)
   try {
-    if (codecUtils.getCodecName(reader.readVarUint(false))) return true
+    // Recognition is deliberately separate from strict parsing: a padded known
+    // codec must reach decode() and fail, not silently become raw content.
     return Boolean(codecUtils.getCodecName(reader.readVarUint(false)))
   } catch (error) {
     if (!(error instanceof RangeError)) throw error
@@ -99,8 +94,8 @@ export default class CodecHash extends BasicInterface {
   get prefix() {
     const length = this.length
     const uint8Array = new Uint8Array(length.length + this.discoCodec.codecBuffer.length)
-    uint8Array.set(length)
-    uint8Array.set(this.discoCodec.codecBuffer, length.length)
+    uint8Array.set(this.discoCodec.codecBuffer)
+    uint8Array.set(length, this.discoCodec.codecBuffer.length)
 
     return uint8Array
   }

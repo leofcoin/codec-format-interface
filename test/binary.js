@@ -3,12 +3,13 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import { Codec, CodecHash, FormatInterface } from '../exports/index.js'
 import { utils as codecUtils } from '@leofcoin/codecs'
+import { encode as encodeBase32 } from '@vandeurenglenn/base32'
 
 const fixtures = [
-  ['peernet-ps', [243, 224, 193, 3], '20f3e0c10355e5d94c766a7d17017a41fe7a9af5e45b4c3adcea9f8921e6e31bcdc66886bf'],
-  ['disco-hash', [48], '20306cc616d3a29e5bdb8ff68390ca373cbd6806ad9c4a324305a1c8881a42fc0d54'],
-  ['leofcoin-block', [226, 216, 1], '40e2d801eb106f73b168b0ba8f0ac689d8ec05df182820bc167bbf4fa30ccbe4345d4ab0924ae5a73a3ed7a60fdc254061a996021ffb331bdd932ef69641fbf10a4e32ca'],
-  ['transaction-message', [237, 232, 1], '20ede80155e5d94c766a7d17017a41fe7a9af5e45b4c3adcea9f8921e6e31bcdc66886bf']
+  ['peernet-ps', [243, 224, 193, 3], 'f3e0c1032055e5d94c766a7d17017a41fe7a9af5e45b4c3adcea9f8921e6e31bcdc66886bf'],
+  ['disco-hash', [48], '30206cc616d3a29e5bdb8ff68390ca373cbd6806ad9c4a324305a1c8881a42fc0d54'],
+  ['leofcoin-block', [226, 216, 1], 'e2d80140eb106f73b168b0ba8f0ac689d8ec05df182820bc167bbf4fa30ccbe4345d4ab0924ae5a73a3ed7a60fdc254061a996021ffb331bdd932ef69641fbf10a4e32ca'],
+  ['transaction-message', [237, 232, 1], 'ede8012055e5d94c766a7d17017a41fe7a9af5e45b4c3adcea9f8921e6e31bcdc66886bf']
 ]
 
 test('codec headers retain frozen pre-migration bytes across input views', () => {
@@ -25,7 +26,7 @@ test('codec headers retain frozen pre-migration bytes across input views', () =>
   }
 })
 
-test('hash encoding retains frozen pre-migration digests and header order', async () => {
+test('hash encoding uses frozen codec-first bytes without changing digest algorithms', async () => {
   for (const [name, , hex] of fixtures) {
     const hash = new CodecHash({ name })
     await hash.encode(new TextEncoder().encode('binary migration fixture'))
@@ -33,16 +34,13 @@ test('hash encoding retains frozen pre-migration digests and header order', asyn
   }
 })
 
-test('current and legacy hash headers round-trip without rewriting stored bytes', async () => {
+test('only canonical codec-first hash headers round-trip', async () => {
   for (const [name, codec, hex] of fixtures) {
     const current = new Uint8Array(Buffer.from(hex, 'hex'))
     const digest = current.slice(1 + codec.length)
-    const legacy = new Uint8Array([...codec, digest.length, ...digest])
     const paddedCodec = [...codec.slice(0, -1), codec.at(-1) | 128, 0]
     const paddedSize = [digest.length | 128, 0]
-    const paddedCurrent = new Uint8Array([...paddedSize, ...paddedCodec, ...digest])
-    const paddedLegacy = new Uint8Array([...paddedCodec, ...paddedSize, ...digest])
-    for (const input of [current, legacy, paddedCurrent, paddedLegacy]) {
+    for (const input of [current]) {
       const hash = new CodecHash()
       const decoded = hash.decode(input)
       assert.equal(decoded.name, name)
@@ -60,6 +58,20 @@ test('current and legacy hash headers round-trip without rewriting stored bytes'
       repeated.fromBs58(hash.toBs58())
       assert.deepEqual(repeated.encoded, input)
     }
+    for (const invalid of [
+      new Uint8Array([digest.length, ...codec, ...digest]),
+      new Uint8Array([...paddedCodec, digest.length, ...digest]),
+      new Uint8Array([...codec, ...paddedSize, ...digest]),
+      new Uint8Array([...paddedCodec, ...paddedSize, ...digest])
+    ]) {
+      assert.throws(() => new CodecHash().decode(invalid))
+      const encoded = new CodecHash()
+      assert.throws(() => encoded.fromBs32(encodeBase32(invalid)))
+    }
+    // A recognized but non-canonical codec must never be hashed as raw input.
+    const padded = new Uint8Array([...paddedCodec, digest.length, ...digest])
+    await assert.rejects(new CodecHash().init(padded), RangeError)
+    await assert.rejects(new CodecHash().validate(padded), RangeError)
   }
 })
 
@@ -129,39 +141,26 @@ test('format hashing always treats message content as raw bytes, not a hash head
   }
 })
 
-test('registered codec/length collisions are resolved by complete digest lengths', async () => {
+test('numeric codec/length collisions never switch header layouts', async () => {
   codecUtils.addCodec({ name: 'test-codec-32-sha384', codec: 32, hashAlg: 'sha-384' })
   codecUtils.addCodec({ name: 'test-codec-64-sha512', codec: 64, hashAlg: 'sha-512' })
   for (const name of ['test-codec-32-sha384', 'test-codec-64-sha512']) {
     const source = new CodecHash({ name })
     await source.encode(new Uint8Array([1, 2, 3]))
     const current = source.encoded
-    const legacy = new Uint8Array([...source.codec, ...source.length, ...source.digest])
-    for (const bytes of [current, legacy]) {
-      const decoded = new CodecHash().decode(bytes)
-      assert.equal(decoded.name, name)
-      assert.deepEqual(decoded.digest, source.digest)
-      assert.equal(decoded.size, source.digest.length)
+    const decoded = new CodecHash().decode(current)
+    assert.equal(decoded.name, name)
+    assert.deepEqual(decoded.digest, source.digest)
+    assert.equal(decoded.size, source.digest.length)
+    if (source.codec[0] !== source.size) {
+      const lengthFirst = new Uint8Array([...source.length, ...source.codec, ...source.digest])
+      assert.throws(() => new CodecHash().decode(lengthFirst))
     }
   }
 })
 
-test('legacy codec-first hash decoding uses independent consumed-byte cursors', () => {
-  const digest = Uint8Array.from({ length: 32 }, (_, index) => index)
-  for (const [name, bytes] of fixtures.filter(([name]) => name !== 'leofcoin-block')) {
-    const padded = [...bytes.slice(0, -1), bytes.at(-1) | 128, 0]
-    for (const header of [[...bytes, 32], [...padded, 160, 0]]) {
-      const hash = new CodecHash()
-      const decoded = hash.decode(new Uint8Array([...header, ...digest]))
-      assert.equal(decoded.name, name)
-      assert.equal(decoded.size, digest.length)
-      assert.deepEqual(decoded.digest, digest)
-      assert.deepEqual(Array.from(decoded.length), [32])
-    }
-  }
-})
-
-test('legacy padded codec prefixes remain accepted without allowing truncated or unsafe integers', () => {
+test('hash headers reject padded, truncated and unsafe integers', () => {
+  // Standalone Codec compatibility is independent of strict hash framing.
   const decoded = new Codec(new Uint8Array([176, 0]))
   assert.equal(decoded.name, 'disco-hash')
   assert.deepEqual(Array.from(decoded.encode()), [48])
@@ -171,6 +170,22 @@ test('legacy padded codec prefixes remain accepted without allowing truncated or
   }
   assert.throws(() => new CodecHash().decode(new Uint8Array([48, 128])), RangeError)
   assert.throws(() => new CodecHash().decode(new Uint8Array([48, 32, 1])), /hash length inconsistent/)
+})
+
+test('digest length counts only digest bytes and bounds all reads', () => {
+  const digest = Uint8Array.from({ length: 128 }, (_, index) => index)
+  const bytes = new Uint8Array([48, 128, 1, ...digest])
+  const decoded = new CodecHash().decode(bytes)
+  assert.equal(decoded.size, 128)
+  assert.deepEqual(decoded.digest, digest)
+  assert.deepEqual(Array.from(decoded.length), [128, 1])
+  for (const invalid of [
+    bytes.subarray(0, -1),
+    new Uint8Array([...bytes, 0]),
+    new Uint8Array([48, 131, 1, ...digest]),
+    new Uint8Array([127, 0]),
+    new Uint8Array([48, ...new Array(7).fill(255), 16])
+  ]) assert.throws(() => new CodecHash().decode(invalid))
 })
 
 test('raw hash payloads are not required to begin with a valid codec integer', async () => {
